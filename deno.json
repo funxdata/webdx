@@ -1,0 +1,12 @@
+{
+    "version": "0.0.1",
+    "nodeModulesDir": "auto",
+    "tasks": {
+        "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi  jsr:@dowell/toolkit/view",
+        "pack":"deno run --allow-net --allow-read --allow-env --allow-ffi jsr:@dowell/toolkit/pack"
+    },
+    "imports": {
+        "std/": "https://deno.land/std@<latest>/",
+        "@dowell/toolkit": "jsr:@dowell/toolkit@^0.1.7"
+    }
+}
