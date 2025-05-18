@@ -4,7 +4,21 @@ export default class SSE {
   constructor(url:string){
     this.url=url;
   }
-  // 
+  
+  // 监听事件
+  listeners(){
+
+  };
+  
+  // 添加监听事件
+  addEventListener(){
+
+  }
+  // 移除监听事件
+  removeEventListener(){
+    
+  }
+
  }
 
 // var SSE = function (url, options) {
