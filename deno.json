@@ -1,5 +1,25 @@
 {
+    "name": "@funxdata/webdx",
     "version": "0.0.1",
+    "license": "MIT",
+    "exclude": [
+        "template/",
+        "webdx/",
+        "pages/",
+        "dist/",
+        ".vscode/",
+        "plugin",
+        "node_modules",
+        "screen.exe",
+        "index.html",
+        ".gitmodules",
+        "deno.lock"
+    ],
+    "exports": {
+        "./dxhttp":"./http/exhttp.ts",
+        "./dxsse":"./server/server.ts",
+        "./dxsoket":"./server/pack.ts"
+    },
     "nodeModulesDir": "auto",
     "tasks": {
         "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi  jsr:@dowell/toolkit/view",
@@ -7,8 +27,7 @@
         "sse": "deno run --allow-net ./server/sse.ts"
     },
     "imports": {
-        "std/": "https://deno.land/std@0.224.0/",
-        "@dowell/toolkit": "jsr:@dowell/toolkit@^0.1.7"
+        "@funxdata/toolkit": "jsr:@funxdata/toolkit@^0.1.24"
     },
     "compilerOptions": {
         "lib": ["deno.ns","dom", "esnext"]
