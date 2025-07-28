@@ -17,8 +17,8 @@
     ],
     "exports": {
         "./dxhttp":"./http/exhttp.ts",
-        "./dxsse":"./server/server.ts",
-        "./dxsoket":"./server/pack.ts"
+        "./dxsse":"./sse/dxsse.ts",
+        "./dxsoket":"./soket/dxsoket.ts"
     },
     "nodeModulesDir": "auto",
     "tasks": {
