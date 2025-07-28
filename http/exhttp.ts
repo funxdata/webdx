@@ -1,4 +1,4 @@
-import { FetchClient } from "./core.ts";
+import { HttpClient } from "./request.ts";
   
-export class Dxhttp extends FetchClient {}
+export class Dxhttp extends HttpClient {}
   
