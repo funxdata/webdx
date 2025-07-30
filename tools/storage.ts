@@ -1,6 +1,7 @@
-import { ObjType } from './types.ts'
-export const Storage = {
+import type { ObjType,StorageType } from './types.ts'
+export const Storage:StorageType = {
     // 存
+    // deno-lint-ignore no-explicit-any
     set(key: string, val: any, expired?: number) {
         // 创建对象
         const obj: ObjType = {
@@ -14,6 +15,7 @@ export const Storage = {
     // 取
     get(key: string) {
         // 取回数据
+        // deno-lint-ignore prefer-const
         let val = localStorage.getItem(key)
         // 数据不存在时,返回数据
         if (!val) {
