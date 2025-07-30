@@ -49,22 +49,27 @@ export class HttpClient {
     }
   }
 
+  // deno-lint-ignore no-explicit-any
   get<T = any>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...config, method: 'GET' });
   }
 
+  // deno-lint-ignore no-explicit-any
   post<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...config, method: 'POST', body });
   }
 
+  // deno-lint-ignore no-explicit-any
   put<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...config, method: 'PUT', body });
   }
 
+  // deno-lint-ignore no-explicit-any
   patch<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...config, method: 'PATCH', body });
   }
 
+  // deno-lint-ignore no-explicit-any
   delete<T = any>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
     return this.request<T>(url, { ...config, method: 'DELETE' });
   }

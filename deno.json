@@ -1,6 +1,6 @@
 {
     "name": "@funxdata/webdx",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "license": "MIT",
     "exclude": [
         "template/",
@@ -18,7 +18,8 @@
     "exports": {
         "./dxhttp":"./http/exhttp.ts",
         "./dxsse":"./sse/dxsse.ts",
-        "./dxsoket":"./soket/dxsoket.ts"
+        "./dxsoket":"./soket/dxsoket.ts",
+        "./tools":"./tools/index.ts"
     },
     "nodeModulesDir": "auto",
     "tasks": {
