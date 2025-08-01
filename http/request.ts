@@ -1,7 +1,7 @@
 import type { HttpRequestConfig, HttpResponse } from "../types/exhttp.ts";
 import { Storage } from "../tools/storage.ts"
 
-const token_info = await Storage.get("xtoken") as string;
+const token_info = Storage.get("xtoken") as string;
 
 export class HttpClient {
   constructor(private baseConfig: HttpRequestConfig = {}) {}
