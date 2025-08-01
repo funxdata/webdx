@@ -1,7 +1,7 @@
-import { HttpRequestConfig, HttpResponse } from "../types/exhttp.ts";
-import { getTokenInfo } from "./token.ts";
+import type { HttpRequestConfig, HttpResponse } from "../types/exhttp.ts";
+import { Storage } from "../tools/storage.ts"
 
-const token_info = await getTokenInfo();
+const token_info = await Storage.get("xtoken") as string;
 
 export class HttpClient {
   constructor(private baseConfig: HttpRequestConfig = {}) {}
@@ -26,7 +26,7 @@ export class HttpClient {
         method: config.method || 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-token': token_info.token,
+          'x-token': token_info,
           ...this.baseConfig.headers,
           ...config.headers
         },
