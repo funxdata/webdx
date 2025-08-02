@@ -1,6 +1,6 @@
 {
     "name": "@funxdata/webdx",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "license": "MIT",
     "exclude": [
         "template/",
@@ -28,6 +28,7 @@
         "sse": "deno run --allow-net ./server/sse.ts"
     },
     "imports": {
+        "@/":"./",
         "@funxdata/toolkit": "jsr:@funxdata/toolkit@^0.1.30"
     },
     "compilerOptions": {
