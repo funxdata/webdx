@@ -1,6 +1,6 @@
-import { HttpClient } from './request.ts';
-const request = new HttpClient({
-    baseURL: '/assets/',
+import { Dxhttp } from "@/client/dxhttp.ts";
+const request = new Dxhttp({
+  baseURL: '/assets/',
   timeout: 3000
 });
 

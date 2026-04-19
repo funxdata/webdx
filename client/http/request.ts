@@ -1,6 +1,5 @@
 import type { HttpRequestConfig, HttpResponse } from "@/types/exhttp.ts";
 import { Storage } from "@/client/tools/storage.ts"
-
 const token_info = Storage.get("xtoken") as string;
 
 export class HttpClient {
@@ -34,8 +33,18 @@ export class HttpClient {
         signal: controller.signal
       });
 
-      const data = await res.json().catch(() => null);
-
+      // 获取 Content-Type
+      const contentType = res.headers.get("Content-Type") || "";
+      let data: any;
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+      } else {
+        data = await res.text();
+      }
       return {
         data,
         status: res.status,

@@ -1,5 +1,5 @@
 export const index_tpl = `
     <div class="index">
-        <h1>Welcome to FunxData-WebDataExchange</h1>
+        <div id="mark-content" class="markdown-body"></div>
     </div>
 `

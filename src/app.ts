@@ -37,3 +37,4 @@ const app_navtabs = app_main.querySelector("#asides") as HTMLElement;
 app_navtabs.innerHTML = await TplToHtml.renderString(menu_tpl,{"tabledata":routerinfo});
 
 GlobalPagesRouter.replace("/");
+
