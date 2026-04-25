@@ -1,38 +1,40 @@
 {
-    "name": "@funxdata/webdx",
-    "version": "0.0.7",
-    "license": "MIT",
-    "exclude": [
-        "template/",
-        "webdx/",
-        "pages/",
-        "dist/",
-        ".vscode/",
-        "plugin",
-        "node_modules",
-        "screen.exe",
-        "index.html",
-        ".gitmodules",
-        "deno.lock"
-    ],
-    "exports": {
-        "./dxhttp":"./http/exhttp.ts",
-        "./dxsse":"./sse/dxsse.ts",
-        "./dxsoket":"./soket/dxsoket.ts",
-        "./tools":"./tools/index.ts"
-    },
-    "nodeModulesDir": "auto",
-    "tasks": {
-        "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/view",
-        "pack":"deno run --allow-net --allow-read --allow-env --allow-ffi jsr:@funxdata/toolkit/pack",
-        "sse": "deno run --allow-net ./server/sse.ts"
-    },
-    "imports": {
-        "@/":"./",
-        "@funxdata/toolkit": "jsr:@funxdata/toolkit@^0.1.30",
-         "tailwindcss": "npm:tailwindcss@^4.2.2"
-    },
-    "compilerOptions": {
-        "lib": ["deno.ns","dom", "esnext"]
-    }
+  "name": "@funxdata/webdx",
+  "version": "0.0.8",
+  "license": "MIT",
+  "exclude": [
+    "assets/",
+    "template/",
+    "webdx/",
+    "pages/",
+    "dist/",
+    ".vscode/",
+    "plugin",
+    "node_modules",
+    "screen.exe",
+    "index.html",
+    ".gitmodules",
+    "deno.lock"
+  ],
+  "exports": {
+    "./dxhttp": "./client/dxhttp.ts",
+    "./dxsse": "./client/dxsse.ts",
+    "./dxsoket": "./client/dxsoket.ts",
+    "./tools": "./client/dxtools.ts",
+    "./types": "./client/types.ts"
+  },
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/view",
+    "pack": "deno run --allow-net --allow-read --allow-env --allow-ffi jsr:@funxdata/toolkit/pack",
+    "sse": "deno run --allow-net ./server/sse.ts"
+  },
+  "imports": {
+    "@/": "./",
+    "@funxdata/toolkit": "jsr:@funxdata/toolkit@^0.1.30",
+    "tailwindcss": "npm:tailwindcss@^4.2.2"
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom", "esnext"]
+  }
 }
