@@ -1,3 +1,3 @@
-import { HttpClient } from "./http/request.ts";
-  
-export class Dxhttp extends HttpClient {}
+import { DxHttp } from "./http/request.ts";
+
+export { DxHttp };

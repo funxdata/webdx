@@ -1,85 +1,111 @@
-import type { HttpRequestConfig, HttpResponse } from "@/types/exhttp.ts";
-import { Storage } from "@/client/tools/storage.ts"
-const token_info = Storage.get("xtoken") as string;
+import type {
+  Callback,
+  DxHttpRequestConfig,
+  DxHttpResponse,
+  DxHttpType,
+} from "./types.ts";
+import { CoreRequest } from "./core.ts";
+import { CoreResponse } from "./parse.ts";
 
-export class HttpClient {
-  constructor(private baseConfig: HttpRequestConfig = {}) {}
+export class DxHttp implements DxHttpType {
+  url?: string;
+  method?: string;
+  headers?: Record<string, string>;
+  timeout?: number;
+  private tokencache: Record<string, string> = {};
+  private authorize: boolean = false;
+  private errorHook: Callback = () => {};
 
-  private async request<T>(
+  constructor(private baseConfig: DxHttpRequestConfig = {}) {
+    this.url = baseConfig.baseURL;
+    this.method = baseConfig.method;
+    this.headers = baseConfig.headers;
+    this.timeout = baseConfig.timeout;
+  }
+
+  // 整理headers
+  private get_headers(config?: DxHttpRequestConfig) {
+    let headers: Record<string, string> = {
+      ...this.headers,
+      ...config?.headers,
+    };
+    if (this.authorize) {
+      headers = { ...headers, ...this.tokencache };
+    }
+    return headers;
+  }
+
+  private get_url(uri: string) {
+    return this.url + uri;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  async get<T = any>(
+    uri: string,
+    config?: DxHttpRequestConfig,
+  ): Promise<DxHttpResponse<T>> {
+    const headers = this.get_headers(config);
+    const res = await CoreRequest(this.get_url(uri), headers); // 发请求
+    return CoreResponse<T>(res); // 解析响应
+  }
+
+  // deno-lint-ignore no-explicit-any
+  async post<T = any>(
+    uri: string,
+    body: any,
+    config?: DxHttpRequestConfig,
+  ): Promise<DxHttpResponse<T>> {
+    const headers = this.get_headers();
+    const res = await CoreRequest(this.get_url(uri), headers, body);
+
+    return CoreResponse<T>(res);
+  }
+
+  // deno-lint-ignore no-explicit-any
+  async put<T = any>(
+    uri: string,
+    body: any,
+    config?: DxHttpRequestConfig,
+  ): Promise<DxHttpResponse<T>> {
+    const headers = this.get_headers(config);
+    const res = await CoreRequest(this.get_url(uri), headers, body);
+
+    return CoreResponse<T>(res);
+  }
+
+  // deno-lint-ignore no-explicit-any
+  async patch<T = any>(
     url: string,
-    config: HttpRequestConfig = {}
-  ): Promise<HttpResponse<T>> {
-    const finalUrl = (config.baseURL || this.baseConfig.baseURL || '') + url;
-
-    const controller = new AbortController();
-    const timeout = config.timeout || this.baseConfig.timeout;
-
-    // 设置定时器，并保存定时器 ID 以便清除
-    let timer: number | undefined;
-    if (timeout) {
-      timer = setTimeout(() => controller.abort(), timeout);
-    }
-
-    try {
-      const res = await fetch(finalUrl, {
-        method: config.method || 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-token': token_info,
-          ...this.baseConfig.headers,
-          ...config.headers
-        },
-        body: config.body ? JSON.stringify(config.body) : undefined,
-        signal: controller.signal
-      });
-
-      // 获取 Content-Type
-      const contentType = res.headers.get("Content-Type") || "";
-      let data: any;
-      if (contentType.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch {
-          data = null;
-        }
-      } else {
-        data = await res.text();
-      }
-      return {
-        data,
-        status: res.status,
-        ok: res.ok
-      };
-    } finally {
-      // 清理定时器，防止内存泄漏
-      if (timer !== undefined) {
-        clearTimeout(timer);
-      }
-    }
+    body: any,
+    config?: DxHttpRequestConfig,
+  ): Promise<DxHttpResponse<T>> {
+    const headers = this.get_headers(config);
+    const res = await CoreRequest(this.get_url(url), headers, body);
+    return CoreResponse<T>(res);
   }
 
   // deno-lint-ignore no-explicit-any
-  get<T = any>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...config, method: 'GET' });
+  async delete<T = any>(
+    url: string,
+    config?: DxHttpRequestConfig,
+  ): Promise<DxHttpResponse<T>> {
+    const headers = this.get_headers(config);
+    const res = await CoreRequest(this.get_url(url), headers);
+
+    return CoreResponse<T>(res);
+  }
+  // 是否开启授权
+  setAuthorize(status: boolean) {
+    this.authorize = status;
   }
 
-  // deno-lint-ignore no-explicit-any
-  post<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...config, method: 'POST', body });
+  // 设置token
+  setToken(key: string, token: string) {
+    this.tokencache = { [key]: token };
   }
 
-  // deno-lint-ignore no-explicit-any
-  put<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...config, method: 'PUT', body });
-  }
-
-  // deno-lint-ignore no-explicit-any
-  patch<T = any>(url: string, body: any, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...config, method: 'PATCH', body });
-  }
-
-  // deno-lint-ignore no-explicit-any
-  delete<T = any>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<T>> {
-    return this.request<T>(url, { ...config, method: 'DELETE' });
+  // 错误处理函数
+  setRequestErrorHook(fn: Callback) {
+    this.errorHook = fn;
   }
 }
