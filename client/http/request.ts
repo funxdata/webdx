@@ -45,8 +45,13 @@ export class DxHttp implements DxHttpType {
     config?: DxHttpRequestConfig,
   ): Promise<DxHttpResponse<T>> {
     const headers = this.get_headers(config);
-    const res = await CoreRequest(this.get_url(uri), headers); // 发请求
-    return CoreResponse<T>(res); // 解析响应
+    const res = await CoreRequest(
+      this.get_url(uri),
+      "GET",
+      undefined,
+      { headers, timeout: this.timeout, ...config }
+    );
+    return CoreResponse<T>(res);
   }
 
   // deno-lint-ignore no-explicit-any
@@ -55,9 +60,13 @@ export class DxHttp implements DxHttpType {
     body: any,
     config?: DxHttpRequestConfig,
   ): Promise<DxHttpResponse<T>> {
-    const headers = this.get_headers();
-    const res = await CoreRequest(this.get_url(uri), headers, body);
-
+    const headers = this.get_headers(config);
+    const res = await CoreRequest(
+      this.get_url(uri),
+      "POST",
+      body,
+      { headers, timeout: this.timeout, ...config }
+    );
     return CoreResponse<T>(res);
   }
 
@@ -68,32 +77,46 @@ export class DxHttp implements DxHttpType {
     config?: DxHttpRequestConfig,
   ): Promise<DxHttpResponse<T>> {
     const headers = this.get_headers(config);
-    const res = await CoreRequest(this.get_url(uri), headers, body);
-
+    const res = await CoreRequest(
+      this.get_url(uri),
+      "PUT",
+      body,
+      { headers, timeout: this.timeout, ...config }
+    );
     return CoreResponse<T>(res);
   }
 
   // deno-lint-ignore no-explicit-any
   async patch<T = any>(
-    url: string,
+    uri: string,
     body: any,
     config?: DxHttpRequestConfig,
   ): Promise<DxHttpResponse<T>> {
     const headers = this.get_headers(config);
-    const res = await CoreRequest(this.get_url(url), headers, body);
+    const res = await CoreRequest(
+      this.get_url(uri),
+      "PATCH",
+      body,
+      { headers, timeout: this.timeout, ...config }
+    );
     return CoreResponse<T>(res);
   }
 
   // deno-lint-ignore no-explicit-any
   async delete<T = any>(
-    url: string,
+    uri: string,
     config?: DxHttpRequestConfig,
   ): Promise<DxHttpResponse<T>> {
     const headers = this.get_headers(config);
-    const res = await CoreRequest(this.get_url(url), headers);
-
+    const res = await CoreRequest(
+      this.get_url(uri),
+      "DELETE",
+      undefined,
+      { headers, timeout: this.timeout, ...config }
+    );
     return CoreResponse<T>(res);
   }
+
   // 是否开启授权
   setAuthorize(status: boolean) {
     this.authorize = status;
