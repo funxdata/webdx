@@ -53,17 +53,20 @@ export interface FetchEventSourceInit extends RequestInit {
     fetch?: typeof fetch;
 }
 
-export function fetchEventSource(input: RequestInfo, {
-    signal: inputSignal,
-    headers: inputHeaders,
-    onopen: inputOnOpen,
-    onmessage,
-    onclose,
-    onerror,
-    openWhenHidden,
-    fetch: inputFetch,
-    ...rest
-}: FetchEventSourceInit) {
+export function fetchEventSource(
+    input: RequestInfo, 
+    {
+        signal: inputSignal,
+        headers: inputHeaders,
+        onopen: inputOnOpen,
+        onmessage,
+        onclose,
+        onerror,
+        openWhenHidden,
+        fetch: inputFetch,
+        ...rest
+    }: FetchEventSourceInit
+): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         // make a copy of the input headers since we may modify it below:
         const headers = { ...inputHeaders };
@@ -150,5 +153,7 @@ function defaultOnOpen(response: Response) {
     const contentType = response.headers.get('content-type');
     if (!contentType?.startsWith(EventStreamContentType)) {
         throw new Error(`Expected content-type to be ${EventStreamContentType}, Actual: ${contentType}`);
-    }
+    } 
 }
+
+
