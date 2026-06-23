@@ -1,3 +1,4 @@
+// client/http/request.ts
 import type {
   Callback,
   DxHttpRequestConfig,
@@ -23,23 +24,33 @@ export class DxHttp implements DxHttpType {
     this.timeout = baseConfig.timeout;
   }
 
-  // 整理headers
   private get_headers(config?: DxHttpRequestConfig) {
+    const defaultHeaders = this.headers || {};
+    
     let headers: Record<string, string> = {
-      ...this.headers,
+      ...defaultHeaders,
       ...config?.headers,
     };
+    
+    const hasContentType = Object.keys(headers).some(key => key.toLowerCase() === "content-type");
+    if (!hasContentType) {
+      headers["Content-Type"] = "application/json";
+    }
+    
     if (this.authorize) {
       headers = { ...headers, ...this.tokencache };
     }
+    
     return headers;
   }
 
   private get_url(uri: string) {
-    return this.url + uri;
+    if (!this.url) return uri;
+    const base = this.url.replace(/\/+$/, '');
+    const path = uri.startsWith('/') ? uri : `/${uri}`;
+    return `${base}${path}`;
   }
 
-  // deno-lint-ignore no-explicit-any
   async get<T = any>(
     uri: string,
     config?: DxHttpRequestConfig,
@@ -49,12 +60,12 @@ export class DxHttp implements DxHttpType {
       this.get_url(uri),
       "GET",
       undefined,
-      { headers, timeout: this.timeout, ...config }
+      headers,  // 直接传递 headers，不要包在对象里
+      this.timeout
     );
     return CoreResponse<T>(res);
   }
 
-  // deno-lint-ignore no-explicit-any
   async post<T = any>(
     uri: string,
     body: any,
@@ -65,12 +76,12 @@ export class DxHttp implements DxHttpType {
       this.get_url(uri),
       "POST",
       body,
-      { headers, timeout: this.timeout, ...config }
+      headers,  // 直接传递 headers，不要包在对象里
+      this.timeout
     );
     return CoreResponse<T>(res);
   }
 
-  // deno-lint-ignore no-explicit-any
   async put<T = any>(
     uri: string,
     body: any,
@@ -81,12 +92,12 @@ export class DxHttp implements DxHttpType {
       this.get_url(uri),
       "PUT",
       body,
-      { headers, timeout: this.timeout, ...config }
+      headers,  // 直接传递 headers
+      this.timeout
     );
     return CoreResponse<T>(res);
   }
 
-  // deno-lint-ignore no-explicit-any
   async patch<T = any>(
     uri: string,
     body: any,
@@ -97,12 +108,12 @@ export class DxHttp implements DxHttpType {
       this.get_url(uri),
       "PATCH",
       body,
-      { headers, timeout: this.timeout, ...config }
+      headers,  // 直接传递 headers
+      this.timeout
     );
     return CoreResponse<T>(res);
   }
 
-  // deno-lint-ignore no-explicit-any
   async delete<T = any>(
     uri: string,
     config?: DxHttpRequestConfig,
@@ -112,23 +123,22 @@ export class DxHttp implements DxHttpType {
       this.get_url(uri),
       "DELETE",
       undefined,
-      { headers, timeout: this.timeout, ...config }
+      headers,  // 直接传递 headers
+      this.timeout
     );
     return CoreResponse<T>(res);
   }
 
-  // 是否开启授权
   setAuthorize(status: boolean) {
     this.authorize = status;
   }
 
-  // 设置token
   setToken(key: string, token: string) {
     this.tokencache = { [key]: token };
   }
 
-  // 错误处理函数
   setRequestErrorHook(fn: Callback) {
     this.errorHook = fn;
   }
 }
+
