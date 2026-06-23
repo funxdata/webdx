@@ -1,5 +1,5 @@
-import { Storage } from "./storage.ts"
-import { DxDate } from "./dxdate.ts"
+import { Storage } from "./tools/storage.ts"
+import { DxDate } from "./tools/dxdate.ts"
 
 export { 
   Storage, 
