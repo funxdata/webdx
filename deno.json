@@ -30,7 +30,7 @@
   },
   "tasks": {
     "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/view",
-    "pack": "deno run --allow-net --allow-read --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/pack src/app.ts",
+    "pack": "deno run --allow-net --allow-read --allow-write --allow-run --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/pack src/app.ts",
     "test": "deno test --allow-net --allow-env tests/",
     "check": "deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts src/app.ts",
     "lint": "deno lint client src tests",
