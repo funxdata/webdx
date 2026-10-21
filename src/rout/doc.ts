@@ -8,6 +8,37 @@ const escapeHtml = (value: string): string =>
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 
+/** 把文档中的 `.md` 链接映射到站点路由，避免点击后落到原始 Markdown。 */
+const DOC_ROUTES: Record<string, string> = {
+  "index.md": "/",
+  "about.md": "/about",
+  "http.md": "/http",
+  "sse.md": "/sse",
+  "soket.md": "/soket",
+  "tools.md": "/tools",
+  "deno.md": "/deno",
+  "protocol.md": "/protocol",
+};
+
+function rewriteDocLinks(root: HTMLElement): void {
+  for (const anchor of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const href = anchor.getAttribute("href");
+    if (
+      !href || href.startsWith("#") || href.startsWith("//") ||
+      /^[a-z][a-z0-9+.-]*:/i.test(href)
+    ) {
+      continue;
+    }
+
+    const [rawPath, hash] = href.split("#");
+    const file = rawPath.split("/").pop() ?? "";
+    const route = DOC_ROUTES[file];
+    if (!route) continue;
+
+    anchor.setAttribute("href", hash ? `${route}#${hash}` : route);
+  }
+}
+
 /**
  * 把 `docs/<file>` 渲染到 `#main-info`。
  *
@@ -38,6 +69,7 @@ export const render_doc = async (file: string): Promise<void> => {
 
     main.innerHTML =
       `<div class="markdown-body" id="mark-content">${content}</div>`;
+    rewriteDocLinks(main);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     main.innerHTML =

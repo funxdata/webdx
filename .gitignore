@@ -136,3 +136,6 @@ dist
 .pnp.*
 deno.lock
 config/*
+
+# 文档站构建产物
+assets/webdx_*.js

@@ -72,12 +72,12 @@
 - 验收：`grep -rn 'sk-' --exclude-dir=.git --exclude-dir=node_modules .`
   无结果。
 
-## S-07 明确开发 / 构建流程（部分完成）
+## S-07 明确开发 / 构建流程 ✅（2026-10-21）
 
-- [ ] 验证 `deno task view`（`jsr:@funxdata/toolkit/view`）与 `deno task pack`
+- [x] 验证 `deno task view`（`jsr:@funxdata/toolkit/view`）与 `deno task pack`
       是否负责 TS 转译；若否，补充构建脚本（`deno bundle` / esbuild）并把
       `index.html` 指向产物。
-- [ ] 确认 `index.html` 中 uxpages CDN 版本 `0.0.26` 是否需要升级 / 锁定。
+- [x] 确认 `index.html` 中 uxpages CDN 版本 `0.0.26` 是否需要升级 / 锁定。
 - [x] 文档写明本地启动命令。
 - 验收：从干净 clone 执行 README 中的命令可打开站点。
 

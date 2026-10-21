@@ -70,8 +70,14 @@ export class DxDate {
     return this.date.getTime() - Date.now();
   }
 
+  /** 日期是否有效；`new Date("invalid")` 时为 false。 */
+  get isValid(): boolean {
+    return !Number.isNaN(this.date.getTime());
+  }
+
   // 评论时间显示逻辑
-  commnet_time(): string {
+  comment_time(): string {
+    if (!this.isValid) return "";
     if (this.is_same("day")) {
       return this.format("HH:mm");
     } else if (this.is_same("year")) {
@@ -79,5 +85,12 @@ export class DxDate {
     } else {
       return this.format("YYYY-MM-DD HH:mm");
     }
+  }
+
+  /**
+   * @deprecated 旧拼写，保留兼容；请使用 `comment_time()`。
+   */
+  commnet_time(): string {
+    return this.comment_time();
   }
 }

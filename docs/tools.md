@@ -27,6 +27,8 @@ Storage.set(key, value, expired?): void
 Storage.get<T = unknown>(key): T | null
 Storage.remove(key): void
 Storage.clear(): void
+
+createStorage(backend: StorageBackend): StorageType
 ```
 
 | 方法                        | 说明                                |
@@ -35,6 +37,7 @@ Storage.clear(): void
 | `get<T>(key)`               | 读取；不存在或已过期返回 `null`     |
 | `remove(key)`               | 删除单个键                          |
 | `clear()`                   | 清空当前 origin 的所有 localStorage |
+| `createStorage(backend)`    | 用自定义后端创建独立的 Storage      |
 
 ### 存储格式
 
@@ -100,6 +103,26 @@ Deno 中启用：
 ```bash
 deno run --location=https://example.com main.ts
 ```
+
+如果宿主没有 `localStorage`（Node、无 origin 的 Deno、Worker），用
+`createStorage` 注入一个后端：
+
+```ts
+import { createStorage } from "@funxdata/webdx/tools";
+
+const memory = new Map<string, string>();
+const storage = createStorage({
+  getItem: (key) => memory.get(key) ?? null,
+  setItem: (key, value) => memory.set(key, value),
+  removeItem: (key) => memory.delete(key),
+  clear: () => memory.clear(),
+});
+
+storage.set("token", "abc", 60_000);
+```
+
+`StorageBackend` 接口只有四个方法：`getItem` / `setItem` / `removeItem` /
+`clear`。你可以把它接到 Deno KV、IndexedDB、文件或任意 KV 存储上。
 
 不适合 `Storage` 的场景：大量数据、服务端持久化、跨设备同步。请使用数据库或 Deno
 KV。
@@ -179,9 +202,9 @@ if (diff < 0) console.log("已过去", -diff, "ms");
 else console.log("还有", diff, "ms");
 ```
 
-### `commnet_time()`
+### `comment_time()`
 
-（方法名原始拼写如此）按「今天 / 今年 / 更早」选择格式：
+按「今天 / 今年 / 更早」选择格式：
 
 | 条件 | 格式               |
 | ---- | ------------------ |
@@ -190,17 +213,28 @@ else console.log("还有", diff, "ms");
 | 更早 | `YYYY-MM-DD HH:mm` |
 
 ```ts
-new DxDate(Date.now()).commnet_time(); // "12:03"
+new DxDate(Date.now()).comment_time(); // "12:03"
+```
+
+旧方法名 `commnet_time()` 仍保留，等价于 `comment_time()`，但已标记 deprecated。
+
+### `isValid`
+
+判断日期是否有效：
+
+```ts
+new DxDate(Date.now()).isValid; // true
+new DxDate("not-a-date").isValid; // false
 ```
 
 ### 无效日期
 
 ```ts
-new DxDate("not-a-date").format("YYYY-MM-DD");
-// "NaN-NaN-NaN"
+const date = new DxDate("not-a-date");
+date.isValid; // false
+date.format("YYYY-MM-DD"); // "NaN-NaN-NaN"
+date.comment_time(); // ""
 ```
-
-`DxDate` 当前没有 `isValid`，调用方需要自行判断输入。
 
 ---
 

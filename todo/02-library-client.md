@@ -7,9 +7,9 @@
 
 ### L-01 移除调试日志
 
-- [ ] 删除 `client/http/core.ts:21`、`:46`、`:52` 的 `console.log`（含
+- [x] 删除 `client/http/core.ts:21`、`:46`、`:52` 的 `console.log`（含
       `🔍 [CoreRequest]` 前缀）。
-- [ ] `client/http/request.ts` 中 `errorHook`
+- [x] `client/http/request.ts` 中 `errorHook`
       未使用（`:18`、`:141`），一并处理（见 L-02）。
 - 验收：`grep -rn 'console\.log' client/` 只剩明确的、可关闭的调试入口（默认 0
   条）。
@@ -24,46 +24,46 @@
   2xx」，语义重叠。
 - `errorHook` 只被赋值，从不调用。
 - 任务：
-  - [ ] 定义 `DxHttpError extends Error`，字段 `status`、`response`（可含
+  - [x] 定义 `DxHttpError extends Error`，字段 `status`、`response`（可含
         `data`、`headers`）、`code: "HTTP" | "TIMEOUT" | "NETWORK"`。
-  - [ ] 非 2xx 时先按 Content-Type 解析响应体，再附带在错误上抛出。
-  - [ ] 决定「抛错」还是「返回 `DxHttpResponse`」为默认行为，并在 README
+  - [x] 非 2xx 时先按 Content-Type 解析响应体，再附带在错误上抛出。
+  - [x] 决定「抛错」还是「返回 `DxHttpResponse`」为默认行为，并在 README
         中写明；`errorHook` 要么实现（调用后仍按策略抛出/吞掉），要么删除。
-  - [ ] 保留 `RequestTimeoutError.name`，因为 `tests/dxhttp3_test.ts:324`
+  - [x] 保留 `RequestTimeoutError.name`，因为 `tests/dxhttp3_test.ts:324`
         已断言。
 - 验收：新增错误路径测试（见 T-06）通过；`deno check` 通过。
 
 ### L-03 修正 `DxHttpResponse` 与 `DxHttpType`
 
-- [ ] `msg: boolean`（`client/http/types.ts:23`）改名为 `ok`（与 HTTP 语义、旧
+- [x] `msg: boolean`（`client/http/types.ts:23`）改名为 `ok`（与 HTTP 语义、旧
       `http/request.ts` 一致），或至少补 `statusText`。
-- [ ] `DxHttpType` 的方法签名与类不一致：接口写 `get<T>(url)` /
+- [x] `DxHttpType` 的方法签名与类不一致：接口写 `get<T>(url)` /
       `post<T>(url, data)`，实现多一个 `config?: DxHttpRequestConfig`
       参数（`types.ts:30-36` vs `request.ts:53` 起）。补全可选参数。
-- [ ] `setRequestErrorHook`
+- [x] `setRequestErrorHook`
       在接口里是属性箭头函数（`types.ts:41`），类里是方法；统一为方法。
-- [ ] `Callback` 类型加 `err?: unknown` 形参（若实现 errorHook）。
+- [x] `Callback` 类型加 `err?: unknown` 形参（若实现 errorHook）。
 - 验收：`client/types.ts` 导出后，外部使用处无类型错误。
 
 ### L-04 请求参数能力补齐
 
-- [ ] `get` / `delete` 支持
+- [x] `get` / `delete` 支持
       `params?: Record<string, string | number | boolean>`，统一在 `get_url`
       中编码（可参考旧 `http/core.ts` 的 `buildUrl`）。
-- [ ] `get` / `delete` 若传 `config.body`，目前被忽略；明确禁止或支持。
-- [ ] `get_url` 在 `baseURL` 为空且 `uri` 是绝对 URL
+- [x] `get` / `delete` 若传 `config.body`，目前被忽略；明确禁止或支持。
+- [x] `get_url` 在 `baseURL` 为空且 `uri` 是绝对 URL
       时不应拼接（当前行为正确，补测试固化）。
 - 验收：`tests/dxhttp3_test.ts` 的「GET with query parameters」用例通过。
 
 ### L-05 Header / Token 合并逻辑
 
-- [ ] `setToken(key, token)` 当前用 `this.tokencache = { [key]: token }`
+- [x] `setToken(key, token)` 当前用 `this.tokencache = { [key]: token }`
       **覆盖**之前所有 key（`request.ts:136-138`），改为合并。
-- [ ] `authorize` 开启时 `{ ...headers, ...tokencache }` 会覆盖用户显式传入的
+- [x] `authorize` 开启时 `{ ...headers, ...tokencache }` 会覆盖用户显式传入的
       `Authorization`；确认优先级（建议：显式 config header > token > 默认）。
-- [ ] `Content-Type` 对 `FormData` / `URLSearchParams` / Blob 不应强制
+- [x] `Content-Type` 对 `FormData` / `URLSearchParams` / Blob 不应强制
       `application/json`（`request.ts:35-38`，`core.ts:37-44`）。
-- [ ] Header key 大小写重复（用户传 `content-type` + 默认
+- [x] Header key 大小写重复（用户传 `content-type` + 默认
       `Content-Type`）会产生重复头；合并时统一小写比较。
 - 验收：新增 header 合并单测。
 
@@ -118,29 +118,29 @@ Worker 中会 `ReferenceError`。
 
 ### L-10 `Storage` 类型与运行环境
 
-- [ ] `get(key)` 返回 `unknown`（`client/tools/types.ts:9`），使用处需 as
+- [x] `get(key)` 返回 `unknown`（`client/tools/types.ts:9`），使用处需 as
       断言；改泛型 `get<T = unknown>(key: string): T | null`。
-- [ ] 直接使用 `localStorage`（`storage.ts`），Deno / SSR 下不可用；提供可注入的
+- [x] 直接使用 `localStorage`（`storage.ts`），Deno / SSR 下不可用；提供可注入的
       storage backend 或明确抛错。
-- [ ] 过期判断 `Date.now() - time > expired`，`expired = 0`
+- [x] 过期判断 `Date.now() - time > expired`，`expired = 0`
       时被当作「无过期」，确认语义。
 - 验收：`deno check client/dxtools.ts` 通过；补 Storage 单测（T-06）。
 
 ### L-11 `DxDate` 修正
 
-- [ ] `format(pattern)` 实际是**固定字符串映射**，不支持自定义 pattern（如
+- [x] `format(pattern)` 实际是**固定字符串映射**，不支持自定义 pattern（如
       `"YYYY/MM/DD"` 会回退为完整时间）；改为 token
       替换，或在文档中声明只支持枚举。
-- [ ] 方法名 `commnet_time` 拼写错误 → `comment_time`（保留别名兼容）。
-- [ ] `new Date("invalid")` 时所有字段为 `NaN`；增加 `isValid`。
+- [x] 方法名 `commnet_time` 拼写错误 → `comment_time`（保留别名兼容）。
+- [x] `new Date("invalid")` 时所有字段为 `NaN`；增加 `isValid`。
 - 验收：行为在 README 或 JSDoc 中写明；补单测。
 
 ### L-12 清理失修文件
 
-- [ ] `client/utils/url.ts` 引用未定义的 `debug()`（`:42`、`:51`）与
+- [x] `client/utils/url.ts` 引用未定义的 `debug()`（`:42`、`:51`）与
       `parse()`（`:52`），且没有任何入口导出。用 `URL` 自包含重写或删除。
-- [ ] `client/tools/json.ts` 未从 `client/dxtools.ts` 导出；补齐导出。
-- [ ] `client/http/core.ts` 的 `DEFAULT_TIMEOUT = 5000` 与 `request.ts` 默认
+- [x] `client/tools/json.ts` 未从 `client/dxtools.ts` 导出；补齐导出。
+- [x] `client/http/core.ts` 的 `DEFAULT_TIMEOUT = 5000` 与 `request.ts` 默认
       `undefined` 不一致：不传 `timeout` 时 `CoreRequest` 用 5000，但 `DxHttp`
       从不传默认值——确认默认超时是否应生效。
 - 验收：`grep -rn 'utils/url' client/ src/` 无引用或文件已删除；`deno check`

@@ -78,5 +78,25 @@
         "title": "cache"
       }
     ]
+  },
+  {
+    "title": "deno",
+    "child": [
+      {
+        "path": "/deno",
+        "url": "/src/deno.ts",
+        "title": "guide"
+      }
+    ]
+  },
+  {
+    "title": "protocol",
+    "child": [
+      {
+        "path": "/protocol",
+        "url": "/src/protocol.ts",
+        "title": "protocol"
+      }
+    ]
   }
 ]

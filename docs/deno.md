@@ -440,10 +440,10 @@ deno test --timeout 30s       # 单测超时
 {
   "tasks": {
     "dev": "deno run --watch --allow-net main.ts",
-    "test": "deno test --allow-net tests/",
-    "check": "deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts",
-    "lint": "deno lint client tests",
-    "fmt": "deno fmt client tests"
+    "test": "deno test --allow-net --allow-env tests/",
+    "check": "deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts src/app.ts",
+    "lint": "deno lint client src tests",
+    "fmt": "deno fmt client src tests"
   }
 }
 ```

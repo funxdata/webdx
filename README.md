@@ -289,19 +289,23 @@ data: {"data":{"exists":true}}
 ## 开发
 
 ```bash
-# 启动文档 / 演示站（需要 @funxdata/toolkit）
+# 启动文档 / 演示站（实时转译 src/app.ts）
 deno task view
 
-# 生成静态站点
+# 构建站点入口，产物：assets/webdx_app_<version>.js
 deno task pack
 
 # 类型检查
-deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts
+deno task check
 
 # 代码风格
 deno fmt --check client src tests
 deno lint client src tests
 ```
+
+> `deno task view` 会实时转译 `/src/app.ts`，适合本地开发；`deno task pack`
+> 生成生产用 JS，部署时把 `index.html` 的 script 指向该产物，
+> 构建产物不会提交（`.gitignore` 已忽略 `assets/webdx_*.js`）。
 
 完整检查可以直接使用 tasks：
 

@@ -41,7 +41,7 @@ tests/ ── Deno.test 用例 + 手工脚本混放
 - ✅ SSE：跨运行时 `fetchEventSource`、`DxSse`、URL 构造与 payload 解析。
 - ✅ Socket：`cmd` 协议、事件订阅、指数退避重连与自动重绑。
 - ✅ 文档站：所有 router 页面已实现；`docs/*.md` 渲染；明文密钥与死代码已删除。
-- ✅ 测试：**149 passed / 1 ignored**（cyctron 集成测试需
+- ✅ 测试：**153 passed / 1 ignored**（cyctron 集成测试需
   `CYCTRON_URL`）；`deno fmt --check`、`deno lint`、`deno task check` 全部通过。
 - ✅ CI：`.github/workflows/ci.yml` 已添加。
 - ✅ 发布 dry-run：`@funxdata/webdx@0.2.0`，仅包含 `client/` + README / LICENSE
