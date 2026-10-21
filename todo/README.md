@@ -46,8 +46,7 @@ tests/ ── Deno.test 用例 + 手工脚本混放
 - ✅ CI：`.github/workflows/ci.yml` 已添加。
 - ✅ 发布 dry-run：`@funxdata/webdx@0.2.0`，仅包含 `client/` + README / LICENSE
   / deno.json。
-- 剩余：真实浏览器下的 `deno task view` 验证、密钥轮换（服务商后台）、`DxDate`
-  API 细节（`commnet_time` 别名 / `isValid`）、JSR 实际发布。
+- 剩余：JSR 实际发布（需要 `deno login`）。
 
 ## 三、任务索引
 

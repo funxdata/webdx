@@ -60,7 +60,7 @@
       引用链中，确认它是被路由使用的页面还是死代码；死代码则删除。
 - 验收：SSE 示例能逐字输出，取消请求后无未关闭的 reader。
 
-## S-06 移除明文密钥（安全）✅（代码已删除，密钥待吊销）
+## S-06 移除明文密钥（安全）✅（2026-10-21 已吊销）
 
 `config/token.ts` 当前包含真实 SiliconFlow API Key（`SECRET_KEY = "sk-..."`）。
 
@@ -68,7 +68,7 @@
       运行时输入。站点为纯前端，**任何写入前端的密钥都必须视为公开**：建议改为用户自行填写，或走后端代理。
 - [x] `.gitignore` 已含 `config/*`，确认 `git ls-files config`
       为空（现状为空）。
-- [ ] 若该 key 曾在任何公开位置出现，**在服务商后台吊销并轮换**。
+- [x] 已在 SiliconFlow 后台删除旧 key（2026-10-21）。
 - 验收：`grep -rn 'sk-' --exclude-dir=.git --exclude-dir=node_modules .`
   无结果。
 
