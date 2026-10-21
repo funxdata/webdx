@@ -2,11 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>web data exchange</title>
+  <title>FunxData-WebDataExchange</title>
+  <link rel="icon" href="https://static.funxdata.com/release/assets/funxdata.ico">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/markdown.css">
+  <script type="module">
+    import { marked } from "/assets/mark.min.js";
+    window.marked = marked;
+  </script>
+  <script type="module" src="https://uicdn.funxdata.com/uxpages/0.0.26/browser.js"></script>
+  <script type="module" src="https://uicdn.funxdata.com/uxpages/0.0.26/router.js"></script>
 </head>
 <body>
-  <h1>web data exchange from index.html!</h1>
-  <div id="log"></div>
+  <div id="app"></div>
 </body>
-<script src="/src/app.ts"></script>
+<script type="module" src="/src/app.ts"></script>
 </html>
