@@ -57,7 +57,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
   }
 }
 ```
@@ -78,7 +78,7 @@ import { DxDate, Storage } from "@funxdata/webdx/tools";
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
   },
   "compilerOptions": {
     "lib": ["deno.ns", "dom", "esnext"]
@@ -94,7 +94,7 @@ import { DxDate, Storage } from "@funxdata/webdx/tools";
 不经过 `deno.json`，适合脚本或一次性验证：
 
 ```ts
-import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
+import { DxHttp } from "jsr:@funxdata/webdx@1.0.0/dxhttp";
 ```
 
 ### 权限

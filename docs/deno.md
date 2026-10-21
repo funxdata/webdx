@@ -69,7 +69,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
   }
 }
 ```
@@ -84,7 +84,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
   }
 }
 ```
@@ -92,7 +92,7 @@ deno add jsr:@funxdata/webdx
 ### 3. 直接 URL（脚本 / 试用）
 
 ```ts
-import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
+import { DxHttp } from "jsr:@funxdata/webdx@1.0.0/dxhttp";
 ```
 
 固定完整版本号可以避免语义化版本漂移；适合一次性脚本或不方便写 `deno.json`
@@ -112,7 +112,7 @@ import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
   },
   "compilerOptions": {
     "lib": ["deno.ns", "dom", "esnext"]
@@ -129,7 +129,7 @@ import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
 只需要声明包根：
 
 ```json
-"@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
+"@funxdata/webdx": "jsr:@funxdata/webdx@^1.0.0"
 ```
 
 JSR 包的 `exports` 字段会自动把以下子路径解析到对应文件：
@@ -163,11 +163,11 @@ npm 包时才需要。
 
 ### 版本范围
 
-| 写法                         | 含义                           |
-| ---------------------------- | ------------------------------ |
-| `jsr:@funxdata/webdx@^0.2.0` | 允许 `0.2.x` 内的补丁 / 小版本 |
-| `jsr:@funxdata/webdx@~0.2.0` | 只允许 `0.2.x` 补丁            |
-| `jsr:@funxdata/webdx@0.2.0`  | 精确锁定                       |
+| 写法                         | 含义                         |
+| ---------------------------- | ---------------------------- |
+| `jsr:@funxdata/webdx@^1.0.0` | 允许 `1.x` 内的补丁 / 小版本 |
+| `jsr:@funxdata/webdx@~1.0.0` | 只允许 `1.0.x` 补丁          |
+| `jsr:@funxdata/webdx@1.0.0`  | 精确锁定                     |
 
 生产项目建议使用 `^` + 提交 `deno.lock`。
 
@@ -476,7 +476,7 @@ deno login
 ```json
 {
   "name": "@funxdata/webdx",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "license": "MIT",
   "exports": {
     "./dxhttp": "./client/dxhttp.ts",

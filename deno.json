@@ -1,6 +1,6 @@
 {
   "name": "@funxdata/webdx",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "Web Data Exchange Framework for Deno and browsers: HTTP, SSE, WebSocket and storage utilities.",
   "exclude": [

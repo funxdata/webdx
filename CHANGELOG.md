@@ -3,6 +3,30 @@
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与
 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.0] - 2026-10-21
+
+首个稳定版本。
+
+### Added
+
+- `Storage` 可注入后端：`createStorage(backend)`，支持 Node / 无 Web Storage 的
+  Deno。
+- `DxDate.isValid` 与正确拼写 `comment_time()`（`commnet_time()` 保留为
+  deprecated）。
+- 文档站新增 `/deno`、`/protocol` 页面，文档内 `.md` 链接自动映射到站点路由。
+- HTTP 测试共享 `tests/_mock_server.ts`。
+- GitHub Actions CI。
+
+### Fixed
+
+- `deno task pack` 的权限与默认入口（`--allow-run` / `--allow-write` /
+  `src/app.ts`）。
+- 文档站构建产物不进入版本控制（`.gitignore`）。
+
+### Changed
+
+- 包版本升至 `1.0.0`，API 视为稳定。
+
 ## [0.2.0] - 2026-10-21
 
 ### Added

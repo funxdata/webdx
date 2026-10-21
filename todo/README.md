@@ -33,7 +33,7 @@ tests/ ── Deno.test 用例 + 手工脚本混放
 ## 二、当前状态（2026-10-21 收尾）
 
 - ✅ **merge 已提交**（`edfd320`），无冲突标记、无未合并路径。
-- ✅ 版本 **0.2.0**；`client/**` 为唯一库布局，旧目录
+- ✅ 版本 **1.0.0**；`client/**` 为唯一库布局，旧目录
   `http/`、`sse/`、`soket/`、`tools/`、`types/` 已删除。
 - ✅ `deno.lock` 已停止跟踪（本地文件保留，`.gitignore` 已忽略）。
 - ✅ HTTP：`DxHttpError` / `RequestTimeoutError`、`params`、header/token
