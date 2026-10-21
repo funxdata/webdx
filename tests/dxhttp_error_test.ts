@@ -1,70 +1,9 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
 import { DxHttp, DxHttpError, RequestTimeoutError } from "../client/dxhttp.ts";
-
-function startServer() {
-  const handler = async (req: Request): Promise<Response> => {
-    const url = new URL(req.url);
-
-    switch (url.pathname) {
-      case "/not-found":
-        return new Response(
-          JSON.stringify({ error: "Not Found", code: 404 }),
-          {
-            status: 404,
-            statusText: "Not Found",
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-
-      case "/error":
-        return new Response("server exploded", {
-          status: 500,
-          statusText: "Internal Server Error",
-          headers: { "Content-Type": "text/plain" },
-        });
-
-      case "/slow":
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        return Response.json({ ok: true });
-
-      case "/params":
-        return Response.json({
-          query: Object.fromEntries(url.searchParams),
-        });
-
-      case "/headers":
-        return Response.json({
-          headers: Object.fromEntries(req.headers),
-        });
-
-      case "/form":
-        return Response.json({
-          contentType: req.headers.get("content-type"),
-        });
-
-      case "/empty":
-        return new Response(null, { status: 204 });
-
-      case "/bad-json":
-        return new Response("not-json", {
-          headers: { "Content-Type": "application/json" },
-        });
-
-      default:
-        return Response.json({ ok: true });
-    }
-  };
-
-  const server = Deno.serve(
-    { port: 0, hostname: "127.0.0.1", onListen: () => {} },
-    handler,
-  );
-  const port = (server.addr as Deno.NetAddr).port;
-  return { server, baseURL: `http://127.0.0.1:${port}` };
-}
+import { startMockServer } from "./_mock_server.ts";
 
 Deno.test("DxHttpError: 404 携带 status / statusText / data / headers", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -83,7 +22,7 @@ Deno.test("DxHttpError: 404 携带 status / statusText / data / headers", async 
 });
 
 Deno.test("DxHttpError: 500 保留文本响应体", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -98,7 +37,7 @@ Deno.test("DxHttpError: 500 保留文本响应体", async () => {
 });
 
 Deno.test("DxHttpError: 超时是 RequestTimeoutError", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL, timeout: 50 });
@@ -115,7 +54,7 @@ Deno.test("DxHttpError: 超时是 RequestTimeoutError", async () => {
 });
 
 Deno.test("DxHttpError: error hook 收到错误且抛错不影响请求", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -138,7 +77,7 @@ Deno.test("DxHttpError: error hook 收到错误且抛错不影响请求", async 
 });
 
 Deno.test("DxHttp: params 会编码到 query string", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -163,7 +102,7 @@ Deno.test("DxHttp: params 会编码到 query string", async () => {
 });
 
 Deno.test("DxHttp: 已有 query 时用 & 追加 params", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -180,7 +119,7 @@ Deno.test("DxHttp: 已有 query 时用 & 追加 params", async () => {
 });
 
 Deno.test("DxHttp: 空 baseURL 时绝对 URL 不会被拼接", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp();
@@ -192,7 +131,7 @@ Deno.test("DxHttp: 空 baseURL 时绝对 URL 不会被拼接", async () => {
 });
 
 Deno.test("DxHttp: 多个 token 会合并，显式 Authorization 优先", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({
@@ -216,7 +155,7 @@ Deno.test("DxHttp: 多个 token 会合并，显式 Authorization 优先", async 
 });
 
 Deno.test("DxHttp: header 大小写不敏感覆盖，不产生重复键", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({
@@ -237,7 +176,7 @@ Deno.test("DxHttp: header 大小写不敏感覆盖，不产生重复键", async 
 });
 
 Deno.test("DxHttp: FormData 不强制 JSON Content-Type", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -253,7 +192,7 @@ Deno.test("DxHttp: FormData 不强制 JSON Content-Type", async () => {
 });
 
 Deno.test("DxHttp: URLSearchParams 不强制 JSON Content-Type", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -271,7 +210,7 @@ Deno.test("DxHttp: URLSearchParams 不强制 JSON Content-Type", async () => {
 });
 
 Deno.test("DxHttp: 204 响应的 data 为 null", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -287,7 +226,7 @@ Deno.test("DxHttp: 204 响应的 data 为 null", async () => {
 });
 
 Deno.test("DxHttp: JSON content-type 但非法 JSON 时回退文本", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });
@@ -300,7 +239,7 @@ Deno.test("DxHttp: JSON content-type 但非法 JSON 时回退文本", async () =
 });
 
 Deno.test("DxHttp: 响应包含 ok / msg / statusText / headers", async () => {
-  const { server, baseURL } = startServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({ baseURL });

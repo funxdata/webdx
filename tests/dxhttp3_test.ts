@@ -1,111 +1,10 @@
 // dxhttp3_test.ts
 import { assertEquals } from "@std/assert";
 import { DxHttp } from "../client/dxhttp.ts";
+import { startMockServer } from "./_mock_server.ts";
 
-function startMockServer() {
-  const handler = async (req: Request) => {
-    const url = new URL(req.url);
-    const method = req.method;
-    const path = url.pathname;
-
-    console.log(`📥 ${method} ${path}`);
-
-    // GET 请求
-    if (path === "/get" && method === "GET") {
-      return Response.json({ method: "GET", ok: true, path });
-    }
-
-    // GET 请求带查询参数
-    if (path === "/get-with-params" && method === "GET") {
-      const params = Object.fromEntries(url.searchParams);
-      return Response.json({ method: "GET", ok: true, params });
-    }
-
-    // POST 请求
-    if (path === "/post" && method === "POST") {
-      const body = await req.json();
-      return Response.json({ method: "POST", ok: true, body });
-    }
-
-    // POST 请求带自定义 header
-    if (path === "/post-with-headers" && method === "POST") {
-      const body = await req.json();
-      const headers = Object.fromEntries(req.headers);
-      return Response.json({
-        method: "POST",
-        ok: true,
-        body,
-        headers: {
-          "content-type": headers["content-type"],
-          "x-custom": headers["x-custom"],
-        },
-      });
-    }
-
-    // PUT 请求
-    if (path === "/put" && method === "PUT") {
-      const body = await req.json();
-      return Response.json({ method: "PUT", ok: true, body });
-    }
-
-    // PATCH 请求
-    if (path === "/patch" && method === "PATCH") {
-      const body = await req.json();
-      return Response.json({ method: "PATCH", ok: true, body });
-    }
-
-    // DELETE 请求
-    if (path === "/delete" && method === "DELETE") {
-      return Response.json({ method: "DELETE", ok: true, path });
-    }
-
-    // DELETE 请求带参数
-    if (path === "/delete-with-id" && method === "DELETE") {
-      const id = url.searchParams.get("id");
-      return Response.json({ method: "DELETE", ok: true, id });
-    }
-
-    // 超时测试
-    if (path === "/timeout" && method === "GET") {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return Response.json({ ok: true });
-    }
-
-    // 错误响应
-    if (path === "/error" && method === "GET") {
-      return new Response(
-        JSON.stringify({ error: "Internal Server Error" }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    // 404
-    return new Response(
-      JSON.stringify({
-        error: "Not Found",
-        path,
-        method,
-      }),
-      {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-  };
-
-  const server = Deno.serve({ port: 0 }, handler);
-  const port = (server.addr as Deno.NetAddr).port;
-
-  console.log(`🚀 Mock server started on port ${port}`);
-
-  return { server, port };
-}
-
-function createClient(port: number) {
-  return new DxHttp({
-    baseURL: `http://localhost:${port}`,
-    timeout: 3000,
-  });
+function createClient(baseURL: string) {
+  return new DxHttp({ baseURL, timeout: 3000 });
 }
 
 // 辅助函数：处理错误类型
@@ -117,10 +16,10 @@ function isError(error: unknown): error is Error {
    GET 测试
 ========================= */
 Deno.test("DxHttp GET request", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const res = await client.get("/get");
 
     assertEquals(res.status, 200);
@@ -134,10 +33,10 @@ Deno.test("DxHttp GET request", async () => {
 });
 
 Deno.test("DxHttp GET request with query parameters", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const res = await client.get("/get-with-params?name=John&age=30");
 
     assertEquals(res.status, 200);
@@ -152,10 +51,10 @@ Deno.test("DxHttp GET request with query parameters", async () => {
    POST 测试
 ========================= */
 Deno.test("DxHttp POST request", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const testData = { hello: "world", number: 42 };
     const res = await client.post("/post", testData);
 
@@ -169,10 +68,10 @@ Deno.test("DxHttp POST request", async () => {
 });
 
 Deno.test("DxHttp POST request with custom headers", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const testData = { name: "John" };
     const res = await client.post("/post-with-headers", testData, {
       headers: {
@@ -191,10 +90,10 @@ Deno.test("DxHttp POST request with custom headers", async () => {
    PUT 测试
 ========================= */
 Deno.test("DxHttp PUT request", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const testData = { id: 1, name: "Updated Name" };
     const res = await client.put("/put", testData);
 
@@ -211,10 +110,10 @@ Deno.test("DxHttp PUT request", async () => {
    PATCH 测试
 ========================= */
 Deno.test("DxHttp PATCH request", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const testData = { name: "Patched Name" };
     const res = await client.patch("/patch", testData);
 
@@ -230,10 +129,10 @@ Deno.test("DxHttp PATCH request", async () => {
    DELETE 测试
 ========================= */
 Deno.test("DxHttp DELETE request", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const res = await client.delete("/delete");
 
     assertEquals(res.status, 200);
@@ -245,10 +144,10 @@ Deno.test("DxHttp DELETE request", async () => {
 });
 
 Deno.test("DxHttp DELETE request with ID parameter", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
     const res = await client.delete("/delete-with-id?id=123");
 
     assertEquals(res.status, 200);
@@ -262,10 +161,10 @@ Deno.test("DxHttp DELETE request with ID parameter", async () => {
    错误处理测试 - 修复版本
 ========================= */
 Deno.test("DxHttp handles 404 error", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
 
     try {
       await client.get("/not-exists");
@@ -284,10 +183,10 @@ Deno.test("DxHttp handles 404 error", async () => {
 });
 
 Deno.test("DxHttp handles 500 error", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
 
     try {
       await client.get("/error");
@@ -308,11 +207,11 @@ Deno.test("DxHttp handles 500 error", async () => {
    超时测试 - 修复版本
 ========================= */
 Deno.test("DxHttp handles timeout", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({
-      baseURL: `http://localhost:${port}`,
+      baseURL,
       timeout: 100, // 100ms 超时
     });
 
@@ -336,10 +235,10 @@ Deno.test("DxHttp handles timeout", async () => {
    批量请求测试
 ========================= */
 Deno.test("DxHttp handles multiple requests", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
-    const client = createClient(port);
+    const client = createClient(baseURL);
 
     const results = await Promise.all([
       client.get("/get"),
@@ -360,11 +259,11 @@ Deno.test("DxHttp handles multiple requests", async () => {
    Header 测试
 ========================= */
 Deno.test("DxHttp uses default headers", async () => {
-  const { server, port } = startMockServer();
+  const { server, baseURL } = startMockServer();
 
   try {
     const client = new DxHttp({
-      baseURL: `http://localhost:${port}`,
+      baseURL,
       headers: {
         "X-Default": "default-value",
       },
