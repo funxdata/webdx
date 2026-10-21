@@ -69,7 +69,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
   }
 }
 ```
@@ -84,7 +84,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
   }
 }
 ```
@@ -92,7 +92,7 @@ deno add jsr:@funxdata/webdx
 ### 3. 直接 URL（脚本 / 试用）
 
 ```ts
-import { DxHttp } from "jsr:@funxdata/webdx@0.1.2/dxhttp";
+import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
 ```
 
 固定完整版本号可以避免语义化版本漂移；适合一次性脚本或不方便写 `deno.json`
@@ -112,7 +112,7 @@ import { DxHttp } from "jsr:@funxdata/webdx@0.1.2/dxhttp";
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
   },
   "compilerOptions": {
     "lib": ["deno.ns", "dom", "esnext"]
@@ -129,7 +129,7 @@ import { DxHttp } from "jsr:@funxdata/webdx@0.1.2/dxhttp";
 只需要声明包根：
 
 ```json
-"@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+"@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
 ```
 
 JSR 包的 `exports` 字段会自动把以下子路径解析到对应文件：
@@ -165,9 +165,9 @@ npm 包时才需要。
 
 | 写法                         | 含义                           |
 | ---------------------------- | ------------------------------ |
-| `jsr:@funxdata/webdx@^0.1.2` | 允许 `0.1.x` 内的补丁 / 小版本 |
-| `jsr:@funxdata/webdx@~0.1.2` | 只允许 `0.1.x` 补丁            |
-| `jsr:@funxdata/webdx@0.1.2`  | 精确锁定                       |
+| `jsr:@funxdata/webdx@^0.2.0` | 允许 `0.2.x` 内的补丁 / 小版本 |
+| `jsr:@funxdata/webdx@~0.2.0` | 只允许 `0.2.x` 补丁            |
+| `jsr:@funxdata/webdx@0.2.0`  | 精确锁定                       |
 
 生产项目建议使用 `^` + 提交 `deno.lock`。
 
@@ -456,11 +456,8 @@ deno task test
 deno task check
 ```
 
-`deno task` 会自动读取当前目录的 `deno.json`。
-
-> 本仓库当前仍有未解决的 merge 冲突（`deno.json`
-> 含冲突标记），这一节是解决冲突后的目标配置；临时可用
-> `deno check --no-config ...` / `deno test --no-config ...`。
+`deno task` 会自动读取当前目录的 `deno.json`。本仓库已配置 `test` / `check` /
+`lint` / `fmt` 四个 task。
 
 ---
 
@@ -479,7 +476,7 @@ deno login
 ```json
 {
   "name": "@funxdata/webdx",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
   "exports": {
     "./dxhttp": "./client/dxhttp.ts",
@@ -697,14 +694,15 @@ const socket = new DxSocket(url, { debug: true });
 当前目录不在项目根时，`deno task` / `deno check` 不会读取配置。使用
 `--config path/to/deno.json`，或先 `cd` 到项目根。
 
-### 本仓库当前无法运行 `deno task`
+### `deno task test` 无法运行
 
-仓库仍处于未完成的 merge 中，`deno.json` 含冲突标记。临时使用：
+确认在项目根目录；如果依赖尚未解析，先执行 `deno install`。也可以直接运行：
 
 ```bash
-deno check --no-config client/dxsse.ts client/dxsoket.ts client/types.ts
-deno test --no-config --allow-net tests/sse_parse_test.ts tests/socket_test.ts
+deno test --allow-net --allow-env tests/
 ```
+
+外部 cyctron 集成测试默认跳过，需要设置 `CYCTRON_URL` 才会运行。
 
 ---
 

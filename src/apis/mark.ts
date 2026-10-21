@@ -1,4 +1,4 @@
-import { DxHttp } from "@/client/dxhttp.ts";
+import { DxHttp } from "../../client/dxhttp.ts";
 const request = new DxHttp({
   baseURL: "/docs/",
   timeout: 3000,

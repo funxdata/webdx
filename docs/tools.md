@@ -24,7 +24,7 @@ import { DxDate, Storage } from "@funxdata/webdx/tools";
 
 ```ts
 Storage.set(key, value, expired?): void
-Storage.get(key): unknown | null
+Storage.get<T = unknown>(key): T | null
 Storage.remove(key): void
 Storage.clear(): void
 ```
@@ -32,7 +32,7 @@ Storage.clear(): void
 | 方法                        | 说明                                |
 | --------------------------- | ----------------------------------- |
 | `set(key, value, expired?)` | 写入并记录时间；`expired` 单位毫秒  |
-| `get(key)`                  | 读取；不存在或已过期返回 `null`     |
+| `get<T>(key)`               | 读取；不存在或已过期返回 `null`     |
 | `remove(key)`               | 删除单个键                          |
 | `clear()`                   | 清空当前 origin 的所有 localStorage |
 
@@ -74,13 +74,13 @@ Storage.get("token"); // null（并自动删除）
 Storage.set("user", { id: 1, name: "a" }); // ✅
 Storage.set("date", new Date()); // ✅ 变成字符串
 Storage.set("fn", () => {}); // ❌ 变成 {}
-Storage.set("undefined", undefined); // ⚠️ 读回 undefined
+Storage.set("undefined", undefined); // ⚠️ 读回 null
 ```
 
 读取返回值类型是 `unknown`，需要自行断言：
 
 ```ts
-const user = Storage.get("user") as { id: number; name: string } | null;
+const user = Storage.get<{ id: number; name: string }>("user");
 ```
 
 ### 环境要求
@@ -204,18 +204,13 @@ new DxDate("not-a-date").format("YYYY-MM-DD");
 
 ---
 
-## 内部工具
+## JSON 工具
 
-以下文件存在于 `client/`，但**未从 `tools` 入口导出**：
-
-| 文件                   | 内容                        | 状态                                       |
-| ---------------------- | --------------------------- | ------------------------------------------ |
-| `client/tools/json.ts` | `isJSONSerializable(value)` | 可单独从内部路径导入，后续可能导出         |
-| `client/utils/url.ts`  | URL 解析                    | 依赖未定义的 `debug` / `parse`，当前不可用 |
-
-`isJSONSerializable` 的行为：
+`isJSONSerializable(value)` 从 `tools` 入口导出：
 
 ```ts
+import { isJSONSerializable } from "@funxdata/webdx/tools";
+
 isJSONSerializable({ a: 1 }); // true
 isJSONSerializable("text"); // true
 isJSONSerializable(new Date()); // true（有 toJSON）
@@ -224,7 +219,7 @@ isJSONSerializable(new FormData()); // false
 isJSONSerializable(() => {}); // false
 ```
 
-除非明确需要，建议不要依赖未导出的内部文件。
+用于在发送 HTTP / Socket 数据前判断值能否被 `JSON.stringify` 正常序列化。
 
 ---
 
@@ -238,7 +233,7 @@ import { Storage } from "@funxdata/webdx/tools";
 const TOKEN_KEY = "webdx:token";
 
 async function getToken(): Promise<string> {
-  const cached = Storage.get(TOKEN_KEY) as string | null;
+  const cached = Storage.get<string>(TOKEN_KEY);
   if (cached) return cached;
 
   const res = await fetch("/api/token");

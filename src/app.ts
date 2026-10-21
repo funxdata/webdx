@@ -1,5 +1,5 @@
-import type { PagesRouterInfo, Route } from "@/src/types/uxpages.ts";
-import { get_router_info } from "@/src/apis/route.ts";
+import type { PagesRouterInfo, Route } from "./types/uxpages.ts";
+import { get_router_info } from "./apis/route.ts";
 import { main_tpl } from "./views/main.ts";
 import { menu_tpl } from "./views/menu.ts";
 import { index_init } from "./rout/index.ts";
@@ -26,7 +26,7 @@ for (let index = 0; index < routerinfo.length; index++) {
 
 const root_node = pagesRouter.search("/");
 root_node.hook = () => {
-  index_init();
+  void index_init();
 };
 
 const app_main = document.getElementById("app") as HTMLElement;

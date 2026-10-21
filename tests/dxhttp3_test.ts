@@ -1,5 +1,5 @@
 // dxhttp3_test.ts
-import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { DxHttp } from "../client/dxhttp.ts";
 
 function startMockServer() {
@@ -38,7 +38,7 @@ function startMockServer() {
         headers: {
           "content-type": headers["content-type"],
           "x-custom": headers["x-custom"],
-        }
+        },
       });
     }
 
@@ -67,7 +67,7 @@ function startMockServer() {
 
     // 超时测试
     if (path === "/timeout" && method === "GET") {
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       return Response.json({ ok: true });
     }
 
@@ -75,7 +75,7 @@ function startMockServer() {
     if (path === "/error" && method === "GET") {
       return new Response(
         JSON.stringify({ error: "Internal Server Error" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -313,7 +313,7 @@ Deno.test("DxHttp handles timeout", async () => {
   try {
     const client = new DxHttp({
       baseURL: `http://localhost:${port}`,
-      timeout: 1000, // 1 秒超时
+      timeout: 100, // 100ms 超时
     });
 
     try {
@@ -322,7 +322,7 @@ Deno.test("DxHttp handles timeout", async () => {
     } catch (error) {
       if (isError(error)) {
         assertEquals(error.name, "RequestTimeoutError");
-        assertEquals(error.message, "Request timeout after 1000ms");
+        assertEquals(error.message, "Request timeout after 100ms");
       } else {
         throw new Error("Unexpected error type");
       }

@@ -76,15 +76,20 @@ type DxHttpRequestConfig = {
   method?: string;
   headers?: Record<string, string>;
   timeout?: number;
+  params?: Record<string, string | number | boolean | null | undefined>;
 };
 ```
 
-> 当前实现中 `get` / `delete` 不会发送请求体，也不支持 `params`
-> 查询对象；需要查询参数时自行拼接：
->
-> ```ts
-> await http.get(`/search?q=${encodeURIComponent(keyword)}`);
-> ```
+`get` / `delete` 不会发送请求体；查询参数通过 `config.params` 传入：
+
+```ts
+await http.get("/search", {
+  params: { q: keyword, page: 2, active: true },
+});
+// /search?q=...&page=2&active=true
+```
+
+`undefined` / `null` 参数会被跳过；已有 query 时使用 `&` 追加。
 
 ---
 
@@ -92,23 +97,27 @@ type DxHttpRequestConfig = {
 
 ```ts
 type DxHttpResponse<T> = {
-  /** 解析后的响应数据 */
+  /** 解析后的响应数据；204 / 205 时为 null */
   data: T;
   /** HTTP 状态码 */
   status: number;
+  /** HTTP 状态文本 */
+  statusText: string;
   /** 是否 2xx */
+  ok: boolean;
+  /** 响应头 */
+  headers: Headers;
+  /** @deprecated 使用 `ok`，仅为兼容保留 */
   msg: boolean;
 };
 ```
 
 ```ts
 const res = await http.get<{ code: number; data: string[] }>("/list");
-if (res.msg) {
-  console.log(res.data.data);
+if (res.ok) {
+  console.log(res.status, res.data.data);
 }
 ```
-
-> `msg` 的命名在后续版本可能改为 `ok`，语义不变。
 
 ---
 
@@ -116,14 +125,19 @@ if (res.msg) {
 
 ### 请求头合并
 
-优先级（后者覆盖前者）：
+优先级（后者覆盖前者，键名大小写不敏感）：
 
 1. 构造函数的 `headers`
 2. 单次请求的 `config.headers`
-3. 若开启授权，`setToken()` 设置的 token 头
+3. 若开启授权，`setToken()` 设置的 token 头（仅在该键尚未显式设置时添加）
 
-如果最终没有任何 `Content-Type`（大小写不敏感），会自动补
-`Content-Type: application/json`。
+`Content-Type` 的自动设置规则：
+
+- 请求体是普通对象 / 数字 / 布尔值或字符串时，自动补
+  `Content-Type: application/json`（已有则保留）；
+- `FormData`、`URLSearchParams`、`Blob`、`ArrayBuffer` / TypedArray、
+  `ReadableStream` 会原样发送，不强制 JSON，`Content-Type`
+  由运行时或调用方决定。
 
 ### 请求体序列化
 
@@ -189,14 +203,12 @@ await http.get("/user/self");
 // 实际请求头包含 Authorization: Bearer abc
 ```
 
-- `setToken(key, token)` 设置一个头。**注意**：当前实现每次调用会替换整个 token
-  缓存，重复调用只保留最后一个 key。
+- `setToken(key, token)` 设置一个头；多次调用会**合并**，不会覆盖之前设置的
+  key。
+- 显式传入的 `Authorization` 优先于 token 缓存。
 - `setAuthorize(false)` 后 token 不再附加。
-- `setRequestErrorHook(fn)` 目前只保存回调，尚未在请求失败时调用（见 README
-  已知限制）。
-
-推荐的替代做法：把 token 直接放进构造函数的 `headers`，或用单次请求的
-`config.headers`。
+- `setRequestErrorHook(fn)` 会在请求失败（HTTP 非 2xx、超时、网络错误）时调用，
+  回调抛错不会影响原请求的异常。
 
 ---
 
@@ -204,26 +216,47 @@ await http.get("/user/self");
 
 ### 非 2xx
 
-底层在 `response.ok === false` 时抛出：
+非 2xx 会抛出 `DxHttpError`，并携带解析后的响应体：
 
 ```ts
-throw new Error(`Request failed with HTTP status ${res.status}`);
+import { DxHttpError } from "@funxdata/webdx/dxhttp";
+
+try {
+  await http.get("/missing");
+} catch (error) {
+  if (error instanceof DxHttpError) {
+    console.log(error.code); // "HTTP" | "TIMEOUT" | "NETWORK"
+    console.log(error.status); // 404
+    console.log(error.statusText);
+    console.log(error.data); // 响应体
+    console.log(error.headers);
+  }
+}
 ```
 
-响应体在抛错前被读取但**不会**附加到错误对象上。需要错误详情时，目前只能：
+`DxHttpError` 的结构：
 
-- 捕获错误并检查 `message`；
-- 或直接使用 `fetch`。
+```ts
+class DxHttpError extends Error {
+  code: "HTTP" | "TIMEOUT" | "NETWORK";
+  status: number;
+  statusText: string;
+  headers?: Headers;
+  data?: unknown;
+}
+```
 
-规划中的 `DxHttpError` 会带上 `status`、`data`、`headers`。
+`message` 仍为 `Request failed with HTTP status <status>`，与旧版本兼容。
 
 ### 网络错误
 
-`fetch` 自身的错误（DNS、连接拒绝、CORS）会原样抛出。
+`fetch` 自身的错误（DNS、连接拒绝、CORS）会被包装成 `DxHttpError`，`code` 为
+`"NETWORK"`，原始错误在 `cause` 中。
 
 ### 超时
 
-见上文 `RequestTimeoutError`。
+超时抛出 `RequestTimeoutError`（继承 `DxHttpError`），`code` 为 `"TIMEOUT"`，
+`name` 为 `"RequestTimeoutError"`。
 
 ### 示例
 
@@ -301,15 +334,14 @@ await http.get("/slow", {
 
 ## 限制
 
-| 限制                   | 说明                                             |
-| ---------------------- | ------------------------------------------------ |
-| 无查询参数对象         | `get` / `delete` 需自行拼接 query                |
-| 无 FormData / 文件上传 | body 会被 `JSON.stringify`                       |
-| 非 2xx 不暴露响应体    | 抛出的 `Error` 只有状态码                        |
-| `msg` 字段命名         | 语义是 `ok`，后续可能改名                        |
-| token 单 key           | `setToken` 会覆盖之前的 key                      |
-| error hook 未生效      | `setRequestErrorHook` 仅保存回调                 |
-| 无拦截器               | 旧目录 `http/interceptors.ts` 未迁移进 `client/` |
+| 限制              | 说明                                                               |
+| ----------------- | ------------------------------------------------------------------ |
+| 无拦截器          | 只有请求方法，无 axios 风格 interceptor                            |
+| 对象 body 走 JSON | 普通对象会被 `JSON.stringify`；文件上传请使用 `FormData` 或 `Blob` |
+| `msg` 字段        | 已标记 deprecated，请使用 `ok`                                     |
+| 无自动重试        | 需要重试时在调用方或 `setRequestErrorHook` 外实现                  |
+| 无取消信号        | 单次请求暂不支持外部 `AbortSignal`（仅超时）                       |
+| 无查询数组展开    | `params` 的值会按 `String(value)` 编码                             |
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "@funxdata/webdx",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "Web Data Exchange Framework for Deno and browsers: HTTP, SSE, WebSocket and storage utilities.",
   "exclude": [
@@ -31,13 +31,14 @@
   "tasks": {
     "view": "deno run --allow-net --allow-read  --allow-run --allow-env --allow-ffi --allow-sys jsr:@funxdata/toolkit/view",
     "pack": "deno run --allow-net --allow-read --allow-env --allow-ffi jsr:@funxdata/toolkit/pack",
-    "test": "deno test --allow-net tests/",
-    "check": "deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts",
+    "test": "deno test --allow-net --allow-env tests/",
+    "check": "deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts src/app.ts",
     "lint": "deno lint client src tests",
     "fmt": "deno fmt client src tests"
   },
   "imports": {
     "@/": "./",
+    "@std/assert": "jsr:@std/assert@^1",
     "@funxdata/toolkit": "jsr:@funxdata/toolkit@^0.1.30",
     "tailwindcss": "npm:tailwindcss@^4.2.2"
   },

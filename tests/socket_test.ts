@@ -1,8 +1,4 @@
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-} from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import { DxSocket, type SocketConfig } from "../client/dxsoket.ts";
 import {
   FakeWebSocket,

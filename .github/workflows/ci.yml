@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check formatting
+        run: deno fmt --check client src tests
+
+      - name: Lint
+        run: deno lint client src tests
+
+      - name: Type check
+        run: deno task check
+
+      - name: Test
+        run: deno task test

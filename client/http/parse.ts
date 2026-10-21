@@ -1,7 +1,7 @@
 import type { DxHttpResponse } from "./types.ts";
 
 /**
- * 根据 Content-Type 自动检测解析方式
+ * 根据 Content-Type 自动检测解析方式。
  */
 const detectResponseType = (
   contentType: string | null,
@@ -18,12 +18,15 @@ const detectResponseType = (
     contentType.includes("audio/")
   ) return "blob";
 
-  return "json"; // 默认 json
+  return "json";
 };
 
 /**
- * 将 fetch Response 解析成 DxHttpResponse<T>
- * 根据 Content-Type 自动选择解析方法
+ * 将 fetch Response 解析成 DxHttpResponse<T>。
+ *
+ * - 204 / 205 / 空 body：`data` 为 null；
+ * - JSON 解析失败时回退为原始文本，避免错误响应体丢失；
+ * - 保留 `msg` 作为 `ok` 的兼容别名。
  */
 export const CoreResponse = async <T>(
   res: Response,
@@ -33,27 +36,35 @@ export const CoreResponse = async <T>(
 
   let data: T;
 
-  switch (type) {
-    case "json":
-      data = await res.json();
-      break;
-    case "text":
-      data = (await res.text()) as unknown as T;
-      break;
-    case "blob":
-      data = (await res.blob()) as unknown as T;
-      break;
-    case "arrayBuffer":
-      data = (await res.arrayBuffer()) as unknown as T;
-      break;
-    default:
-      data = await res.json();
-      break;
+  if (res.status === 204 || res.status === 205) {
+    data = null as T;
+  } else if (type === "blob") {
+    data = (await res.blob()) as T;
+  } else if (type === "arrayBuffer") {
+    data = (await res.arrayBuffer()) as T;
+  } else {
+    const text = await res.text();
+    if (type === "json") {
+      if (text === "") {
+        data = null as T;
+      } else {
+        try {
+          data = JSON.parse(text) as T;
+        } catch {
+          data = text as T;
+        }
+      }
+    } else {
+      data = text as T;
+    }
   }
 
   return {
     data,
     status: res.status,
-    msg: res.status >= 200 && res.status < 300,
+    statusText: res.statusText,
+    ok: res.ok,
+    headers: res.headers,
+    msg: res.ok,
   };
 };

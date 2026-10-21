@@ -47,8 +47,6 @@ export interface Tpl {
 export type PagesRouterInfo = PagesRouter;
 
 declare global {
-  // deno-lint-ignore no-var
   var TplToHtml: Tpl;
-  // deno-lint-ignore no-var
   var GlobalPagesRouter: PagesRouter;
 }

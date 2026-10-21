@@ -1,20 +1,21 @@
 # webdx 任务清单
 
-> 生成时间：2026-10-21
-> 状态：**merge 进行中，未解决冲突，工作区不可构建**
+> 生成时间：2026-10-21 状态：**merge 进行中，未解决冲突，工作区不可构建**
 
 ## 一、项目是什么
 
 `@funxdata/webdx` 是一个基于 Deno 的 **Web 数据交换框架**，提供四个能力：
 
-| 模块 | 入口 | 实现 | 说明 |
-| --- | --- | --- | --- |
-| HTTP | `client/dxhttp.ts` → `client/http/` | `fetch` 封装 | `DxHttp` 类：get/post/put/patch/delete、超时、token、按 Content-Type 自动解析 |
-| SSE | `client/dxsse.ts` → `client/sse/` | `@microsoft/fetch-event-source` 移植 | `fetchEventSource` + 字节流解析（getBytes/getLines/getMessages） |
-| Socket | `client/dxsoket.ts` → `client/soket/` | 原生 `WebSocket` | `DxSocket` 类：bindTask/taskSendMessage/removeTask、自动重连、任务状态表 |
-| Tools | `client/dxtools.ts` → `client/tools/` | 浏览器 API | `Storage`（带过期时间的 localStorage）、`DxDate`（格式化/相对判断）、`isJSONSerializable` |
+| 模块   | 入口                                  | 实现                                 | 说明                                                                                      |
+| ------ | ------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| HTTP   | `client/dxhttp.ts` → `client/http/`   | `fetch` 封装                         | `DxHttp` 类：get/post/put/patch/delete、超时、token、按 Content-Type 自动解析             |
+| SSE    | `client/dxsse.ts` → `client/sse/`     | `@microsoft/fetch-event-source` 移植 | `fetchEventSource` + 字节流解析（getBytes/getLines/getMessages）                          |
+| Socket | `client/dxsoket.ts` → `client/soket/` | 原生 `WebSocket`                     | `DxSocket` 类：bindTask/taskSendMessage/removeTask、自动重连、任务状态表                  |
+| Tools  | `client/dxtools.ts` → `client/tools/` | 浏览器 API                           | `Storage`（带过期时间的 localStorage）、`DxDate`（格式化/相对判断）、`isJSONSerializable` |
 
-`src/` + `assets/` + `index.html` 是**官方文档站/演示站**：由 CDN 上的 `uxpages`（`TplToHtml`、`GlobalPagesRouter`）驱动，`assets/router.json` 声明路由，页面模板在 `src/views/`，数据请求在 `src/apis/`。
+`src/` + `assets/` + `index.html` 是**官方文档站/演示站**：由 CDN 上的
+`uxpages`（`TplToHtml`、`GlobalPagesRouter`）驱动，`assets/router.json`
+声明路由，页面模板在 `src/views/`，数据请求在 `src/apis/`。
 
 ```
 deno.json (exports)
@@ -29,28 +30,35 @@ http/ sse/ soket/ tools/ types/ server/  ── 旧结构（server 时代遗留�
 tests/ ── Deno.test 用例 + 手工脚本混放
 ```
 
-## 二、当前状态（2026-10-21 更新）
+## 二、当前状态（2026-10-21 收尾）
 
-仓库正在把 **244b7ba（origin/main：Web-client 化 + 文档站）** 合并进 **ed458e0（本地：tools/storage、request 修复、测试）**。
-
-- ✅ **全部冲突已解决**（`README.md`、`deno.json`、`deno.lock`、`index.html`、`src/app.ts`），`git status` 无未合并路径。
-- ✅ `deno.json` 采用 client 布局（`exports` 指向 `client/**`，版本 `0.1.2`），并补充了 `test` / `check` / `lint` / `fmt` tasks 与 `description`。
-- ✅ `deno.lock` 取 origin/main 版本；`index.html`、`src/app.ts` 取 origin/main 版本，`src/app.ts` 的 `@/router/types.ts`、`@/tpls/types.ts` 已改为本地 `src/types/uxpages.ts`。
-- ✅ `src/` 中 `deno check` 通过；client 入口 0 错误。
-- ⏳ `.git/MERGE_HEAD` 仍在：冲突已解决但 **merge commit 尚未提交**，等待确认后执行 `git commit`。
-- ✅ 已验证：`deno task check` 通过；SSE / Socket / HTTP 共 **129 个测试通过**；`git diff HEAD --check` 通过。
-- 剩余工作：旧目录清理（D-05 / Q2）、版本号与 lock 策略（Q3/Q4）、文档站页面补全（P2）。
+- ✅ **merge 已提交**（`edfd320`），无冲突标记、无未合并路径。
+- ✅ 版本 **0.2.0**；`client/**` 为唯一库布局，旧目录
+  `http/`、`sse/`、`soket/`、`tools/`、`types/` 已删除。
+- ✅ `deno.lock` 已停止跟踪（本地文件保留，`.gitignore` 已忽略）。
+- ✅ HTTP：`DxHttpError` / `RequestTimeoutError`、`params`、header/token
+  合并、FormData、error hook。
+- ✅ SSE：跨运行时 `fetchEventSource`、`DxSse`、URL 构造与 payload 解析。
+- ✅ Socket：`cmd` 协议、事件订阅、指数退避重连与自动重绑。
+- ✅ 文档站：所有 router 页面已实现；`docs/*.md` 渲染；明文密钥与死代码已删除。
+- ✅ 测试：**149 passed / 1 ignored**（cyctron 集成测试需
+  `CYCTRON_URL`）；`deno fmt --check`、`deno lint`、`deno task check` 全部通过。
+- ✅ CI：`.github/workflows/ci.yml` 已添加。
+- ✅ 发布 dry-run：`@funxdata/webdx@0.2.0`，仅包含 `client/` + README / LICENSE
+  / deno.json。
+- 剩余：真实浏览器下的 `deno task view` 验证、密钥轮换（服务商后台）、`DxDate`
+  API 细节（`commnet_time` 别名 / `isValid`）、JSR 实际发布。
 
 ## 三、任务索引
 
-| 阶段 | 文件 | 内容 | 是否阻塞其他工作 |
-| --- | --- | --- | --- |
-| **P0** | [01-merge-conflicts.md](./01-merge-conflicts.md) | 收尾 merge、解决 5 个冲突、恢复可构建 | ✅ 阻塞全部 |
-| **P1** | [02-library-client.md](./02-library-client.md) | `client/` 库的正确性、类型、跨运行时 | 部分阻塞测试 |
-| **P2** | [03-demo-site.md](./03-demo-site.md) | 演示站补全、密钥与构建流程 | 否 |
-| **P3** | [04-testing-ci.md](./04-testing-ci.md) | 测试整理、去重、CI | 依赖 P0/P1 |
-| **P4** | [05-docs-release.md](./05-docs-release.md) | 文档、版本、发布、旧目录清理 | 依赖 P0 |
-| — | [decisions.md](./decisions.md) | 需要项目所有者拍板的 7 个问题 | 影响 P0/P4 |
+| 阶段   | 文件                                             | 内容                                  | 是否阻塞其他工作 |
+| ------ | ------------------------------------------------ | ------------------------------------- | ---------------- |
+| **P0** | [01-merge-conflicts.md](./01-merge-conflicts.md) | 收尾 merge、解决 5 个冲突、恢复可构建 | ✅ 阻塞全部      |
+| **P1** | [02-library-client.md](./02-library-client.md)   | `client/` 库的正确性、类型、跨运行时  | 部分阻塞测试     |
+| **P2** | [03-demo-site.md](./03-demo-site.md)             | 演示站补全、密钥与构建流程            | 否               |
+| **P3** | [04-testing-ci.md](./04-testing-ci.md)           | 测试整理、去重、CI                    | 依赖 P0/P1       |
+| **P4** | [05-docs-release.md](./05-docs-release.md)       | 文档、版本、发布、旧目录清理          | 依赖 P0          |
+| —      | [decisions.md](./decisions.md)                   | 需要项目所有者拍板的 7 个问题         | 影响 P0/P4       |
 
 ## 四、推荐执行顺序
 
@@ -62,6 +70,8 @@ tests/ ── Deno.test 用例 + 手工脚本混放
 
 ## 五、任务书写约定
 
-- 每个任务都有唯一编号（`M-xx` / `L-xx` / `S-xx` / `T-xx` / `D-xx`），可直接在 PR/commit message 中引用。
-- 完成一个任务就把对应条目的 `[ ]` 改成 `[x]`，并在该文件末尾「完成记录」追加日期与 commit。
+- 每个任务都有唯一编号（`M-xx` / `L-xx` / `S-xx` / `T-xx` / `D-xx`），可直接在
+  PR/commit message 中引用。
+- 完成一个任务就把对应条目的 `[ ]` 改成
+  `[x]`，并在该文件末尾「完成记录」追加日期与 commit。
 - 「验收」是可执行命令或可观察结果，不写「改好了」这种描述。

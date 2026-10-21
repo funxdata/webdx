@@ -57,7 +57,7 @@ deno add jsr:@funxdata/webdx
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
   }
 }
 ```
@@ -78,7 +78,7 @@ import { DxDate, Storage } from "@funxdata/webdx/tools";
 ```json
 {
   "imports": {
-    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.1.2"
+    "@funxdata/webdx": "jsr:@funxdata/webdx@^0.2.0"
   },
   "compilerOptions": {
     "lib": ["deno.ns", "dom", "esnext"]
@@ -94,7 +94,7 @@ import { DxDate, Storage } from "@funxdata/webdx/tools";
 不经过 `deno.json`，适合脚本或一次性验证：
 
 ```ts
-import { DxHttp } from "jsr:@funxdata/webdx@0.1.2/dxhttp";
+import { DxHttp } from "jsr:@funxdata/webdx@0.2.0/dxhttp";
 ```
 
 ### 权限
@@ -299,22 +299,18 @@ deno task pack
 deno check client/dxhttp.ts client/dxsse.ts client/dxsoket.ts client/dxtools.ts client/types.ts
 
 # 代码风格
-deno fmt --check client tests
-deno lint client tests
+deno fmt --check client src tests
+deno lint client src tests
 ```
 
-> **当前分支状态**：仓库仍处于一次未完成的 merge 中，`deno.json` / `deno.lock` /
-> `README.md` / `index.html` / `src/app.ts` 含冲突标记。此时上面的 `deno task`
-> 与默认配置读取会失败，可临时使用：
->
-> ```bash
-> deno check --no-config client/dxsse.ts client/dxsoket.ts client/types.ts
-> deno test --no-config --allow-net tests/sse_parse_test.ts tests/sse_req_test.ts \
->   tests/sse_client_test.ts tests/socket_protocol_test.ts \
->   tests/socket_test.ts tests/socket_reconnect_test.ts
-> ```
->
-> 冲突解决后应删除 `--no-config`。
+完整检查可以直接使用 tasks：
+
+```bash
+deno task fmt
+deno task lint
+deno task check
+deno task test
+```
 
 ---
 
@@ -362,19 +358,14 @@ JSR 发布与 Deno Deploy 的详细步骤见 [Deno 使用指南](./docs/deno.md)
 
 ## 已知限制
 
-- `DxHttp` 在非 2xx 时抛出
-  `Error("Request failed with HTTP status N")`，暂不暴露响应体（规划中的
-  `DxHttpError` 会携带 `status` / `data`）。
-- `DxHttpResponse.msg` 表示「是否 2xx」，后续版本可能改名为 `ok`。
-- `DxHttp.setRequestErrorHook()` 目前只保存回调，尚未在请求失败时调用。
-- `DxHttp` 的 `get` / `delete` 不接受查询参数对象；需要自行拼接 URL。
+- `DxHttpResponse.msg` 已标记 deprecated，请使用 `ok`。
+- `DxHttp` 暂不支持请求级 `AbortSignal`，只有超时取消。
+- `DxHttp` 没有内置拦截器（只有请求方法，无 axios 风格的 interceptor）。
 - `Storage` 直接依赖 `localStorage`，在 Node / 无 Web Storage 的 Deno
   进程中不可用。
 - `DxSse` 不特殊处理 `data: [DONE]`，由调用方在 `onmessage` 中判断。
 - `DxDate.format()` 只支持固定 pattern 列表（见
   [Tools 文档](./docs/tools.md)）。
-- 仓库当前仍保留旧目录（`http/`、`sse/`、`soket/`、`tools/`、`types/`），清理计划见
-  `todo/`。
 
 ---
 

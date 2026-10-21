@@ -47,7 +47,6 @@ client/                 对外发布的库
   sse/                  SSE 解析 / 请求 / 高层客户端
   soket/                DxSocket 实现与协议
   tools/                Storage / DxDate / JSON 工具
-  utils/                URL 工具（未导出）
 
 src/                    文档 / 演示站
 assets/                 站点静态资源与 router.json
