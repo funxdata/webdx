@@ -57,6 +57,7 @@ export type SocketEvent =
   | "remove"
   | "status"
   | "data"
+  | "call"
   | "system"
   | "state";
 
@@ -65,7 +66,15 @@ export type ClientCommand =
   | { cmd: "bind"; uuid: string; lib: string }
   | { cmd: "msg"; uuid: string; data: unknown }
   | { cmd: "status" }
-  | { cmd: "remove"; uuid: string };
+  | { cmd: "remove"; uuid: string }
+  | {
+    id: string;
+    cmd: "call";
+    lib: string;
+    symbol: string;
+    args?: unknown;
+    timeout_ms?: number;
+  };
 
 /** 服务端 realtime 消息。 */
 export interface ServerRealtimeMessage {
@@ -88,6 +97,35 @@ export interface ServerDataMessage {
   uuid?: string;
   data?: unknown;
   [key: string]: unknown;
+}
+
+/** 服务端 call 响应。 */
+export interface ServerCallMessage {
+  type: "call";
+  id?: string;
+  ok?: boolean;
+  code?: number;
+  lib?: string;
+  symbol?: string;
+  elapsed_ms?: number;
+  result?: unknown;
+  error?: string;
+  [key: string]: unknown;
+}
+
+/** call 选项。 */
+export interface CallOptions {
+  /** 超时毫秒数，默认 10000。 */
+  timeoutMs?: number;
+}
+
+/** call 结果。 */
+export interface CallResult<T = unknown> {
+  ok: boolean;
+  code: number;
+  result?: T;
+  error?: string;
+  elapsed_ms?: number;
 }
 
 /** 服务端系统消息。 */
@@ -114,6 +152,7 @@ export interface LegacyServerMessage {
 export type ServerMessage =
   | ServerRealtimeMessage
   | ServerDataMessage
+  | ServerCallMessage
   | ServerSystemMessage
   | LegacyServerMessage
   | Record<string, unknown>;
@@ -124,6 +163,7 @@ export type NormalizedMessage =
   | { kind: "remove"; uuid: string; raw: unknown }
   | { kind: "status"; uuid?: string; status?: string; raw: unknown }
   | { kind: "data"; uuid: string; data: unknown; raw: unknown }
+  | { kind: "call"; id: string; raw: unknown }
   | { kind: "system"; status?: string; data?: unknown; raw: unknown }
   | { kind: "unknown"; raw: unknown };
 
@@ -178,6 +218,12 @@ export interface DxSocketType {
     callback: TaskCallback,
   ): Promise<void>;
   send(uuid: string, data: unknown): Promise<void>;
+  call<T = unknown>(
+    lib: string,
+    symbol: string,
+    args?: unknown,
+    options?: CallOptions,
+  ): Promise<CallResult<T>>;
   taskSendMessage(name: string, data: unknown): Promise<void>;
   requestStatus(): Promise<void>;
   remove(uuid: string): Promise<void>;
@@ -213,6 +259,11 @@ export function normalizeServerMessage(raw: unknown): NormalizedMessage {
     inner?.taskUID,
     raw.taskUID,
   );
+
+  if (type === "call") {
+    const id = firstString(raw.id, inner?.id);
+    return { kind: "call", id, raw };
+  }
 
   if (type === "realtime" || action) {
     switch (action) {

@@ -1,4 +1,6 @@
 import type {
+  CallOptions,
+  CallResult,
   ClientCommand,
   DxSocketState,
   DxSocketType,
@@ -34,6 +36,14 @@ interface TaskEntry {
   status: string;
 }
 
+interface PendingCall {
+  resolve: (result: CallResult) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout> | null;
+  lib: string;
+  symbol: string;
+}
+
 /**
  * 面向 webdx 数据交换服务的 WebSocket 客户端。
  *
@@ -55,6 +65,8 @@ export class DxSocket implements DxSocketType {
   private socket: WebSocketLike | null = null;
   private currentState: DxSocketState = "idle";
   private readonly tasks = new Map<string, TaskEntry>();
+  private readonly pendingCalls = new Map<string, PendingCall>();
+  private callSeq = 0;
   private readonly listeners = new Map<
     SocketEvent,
     Set<(payload: unknown) => void>
@@ -160,6 +172,64 @@ export class DxSocket implements DxSocketType {
     this.sendRaw({ cmd: "msg", uuid, data });
   }
 
+  /**
+   * 一次请求 → 一次 FFI 调用。
+   *
+   * 发送 `{ id, cmd: "call", lib, symbol, args }`，按 `id` 等待服务端回包。
+   * 服务端业务失败（`ok: false`）也会 resolve，调用方检查 `ok` / `code`。
+   * 只有网络断开、发送失败或超时才 reject。
+   */
+  async call<T = unknown>(
+    lib: string,
+    symbol: string,
+    args: unknown = {},
+    options: CallOptions = {},
+  ): Promise<CallResult<T>> {
+    if (!lib) throw new Error("call requires a non-empty lib");
+    if (!symbol) throw new Error("call requires a non-empty symbol");
+
+    await this.ensureConnected();
+
+    const id = `call-${++this.callSeq}-${Date.now().toString(36)}`;
+    const timeoutMs = options.timeoutMs ?? 10000;
+
+    return new Promise<CallResult<T>>((resolve, reject) => {
+      const timer = timeoutMs > 0
+        ? setTimeout(() => {
+          this.pendingCalls.delete(id);
+          reject(
+            new Error(
+              `call ${lib}.${symbol} timed out after ${timeoutMs}ms`,
+            ),
+          );
+        }, timeoutMs)
+        : null;
+
+      this.pendingCalls.set(id, {
+        resolve: resolve as (result: CallResult) => void,
+        reject,
+        timer,
+        lib,
+        symbol,
+      });
+
+      try {
+        this.sendRaw({
+          id,
+          cmd: "call",
+          lib,
+          symbol,
+          args,
+          timeout_ms: timeoutMs,
+        });
+      } catch (error) {
+        this.pendingCalls.delete(id);
+        if (timer !== null) clearTimeout(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  }
+
   /** 查询服务端任务状态（结果通过 `status` 事件返回）。 */
   async requestStatus(): Promise<void> {
     await this.ensureConnected();
@@ -214,6 +284,7 @@ export class DxSocket implements DxSocketType {
       }
     }
 
+    this.rejectPendingCalls(new Error("Socket closed"));
     this.setState("closed");
     this.settleConnect(new Error("Socket closed"));
   }
@@ -316,6 +387,7 @@ export class DxSocket implements DxSocketType {
 
     this.socket = null;
     this.clearConnectTimer();
+    this.rejectPendingCalls(new Error("Socket closed"));
     this.emit("close", event);
 
     if (this.manualClose) {
@@ -452,6 +524,31 @@ export class DxSocket implements DxSocketType {
         this.emit("data", message);
         break;
       }
+      case "call": {
+        const pending = message.id
+          ? this.pendingCalls.get(message.id)
+          : undefined;
+        if (pending) {
+          this.pendingCalls.delete(message.id);
+          if (pending.timer !== null) clearTimeout(pending.timer);
+
+          const raw = message.raw as Record<string, unknown>;
+          const code = typeof raw.code === "number"
+            ? raw.code
+            : (raw.ok === true ? 0 : -1);
+          pending.resolve({
+            ok: raw.ok === true,
+            code,
+            result: raw.result,
+            error: typeof raw.error === "string" ? raw.error : undefined,
+            elapsed_ms: typeof raw.elapsed_ms === "number"
+              ? raw.elapsed_ms
+              : undefined,
+          });
+        }
+        this.emit("call", message);
+        break;
+      }
       case "system":
         this.emit("system", message);
         break;
@@ -493,6 +590,14 @@ export class DxSocket implements DxSocketType {
     const payload = JSON.stringify(command);
     this.debug("send", payload);
     this.socket.send(payload);
+  }
+
+  private rejectPendingCalls(error: Error): void {
+    for (const [id, pending] of this.pendingCalls) {
+      if (pending.timer !== null) clearTimeout(pending.timer);
+      pending.reject(error);
+      this.pendingCalls.delete(id);
+    }
   }
 
   private settleConnect(error?: Error): void {
