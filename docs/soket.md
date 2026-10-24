@@ -118,6 +118,25 @@ await socket.send("task-001", { action: "getData" });
 - 任务必须已 `bind`，否则抛 `Task <uuid> is not bound`；
 - 未连接时会等待连接。
 
+### `call(lib, symbol, args?, options?)`
+
+```ts
+const result = await socket.call("chatllm", "post_chat", {
+  prompt: "你好",
+}, { timeoutMs: 120000 });
+
+if (!result.ok) throw new Error(result.error);
+if (result.result?.code !== 200) throw new Error(result.result?.msg);
+```
+
+- 发送 `{ id, cmd: "call", lib, symbol, args, timeout_ms }`；
+- `lib` / `symbol` 不能为空；自动 `ensureConnected()`；
+- 按 `id` 等待响应，默认超时 `10000 ms`；
+- **业务失败（`ok:false`）也 resolve**，调用方检查 `ok` / `code`；
+- 网络断开、发送失败、超时 reject；
+- `close()` / 断线时所有未完成请求以 `Socket closed` reject；
+- 每次响应同时触发 `"call"` 事件。
+
 ### `requestStatus()`
 
 ```ts
@@ -208,6 +227,7 @@ socket.on("data", (msg) => {
 { "cmd": "msg",    "uuid": "task-001", "data": { "action": "getData" } }
 { "cmd": "status" }
 { "cmd": "remove", "uuid": "task-001" }
+{ "id": "req-1", "cmd": "call", "lib": "chatllm", "symbol": "post_chat", "args": {} }
 ```
 
 ### 服务端回包
@@ -218,6 +238,7 @@ socket.on("data", (msg) => {
 { "type": "realtime", "data": { "action": "remove", "uuid": "task-001" } }
 { "type": "msg", "uuid": "task-001", "data": { "value": 1 } }
 { "type": "system", "data": { "status": "ready" } }
+{ "type": "call", "id": "req-1", "ok": true, "code": 0, "result": { "code": 200 } }
 ```
 
 ### 状态映射
@@ -437,6 +458,10 @@ const socket = new DxSocket("ws://test", {
 ---
 
 ## 限制
+
+- `call` 依赖服务端支持 `cmd: "call"`（cyctron ≥ 1.0.8）；旧服务端会返回 unknown command。
+- 服务端可能在主循环内同步执行 FFI，长调用会延迟同连接的其他命令。
+
 
 - `bind()` 发送成功即认为 `bound`，不等待服务端 ack；需要确认时监听 `"bind"`
   事件并检查 `status`。

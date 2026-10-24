@@ -57,6 +57,7 @@ tests/ ── Deno.test 用例 + 手工脚本混放
 | **P2** | [03-demo-site.md](./03-demo-site.md)             | 演示站补全、密钥与构建流程            | 否               |
 | **P3** | [04-testing-ci.md](./04-testing-ci.md)           | 测试整理、去重、CI                    | 依赖 P0/P1       |
 | **P4** | [05-docs-release.md](./05-docs-release.md)       | 文档、版本、发布、旧目录清理          | 依赖 P0          |
+| **P5** | [06-socket-call.md](./06-socket-call.md) | `DxSocket.call()` 后续任务 | 否 |
 | —      | [decisions.md](./decisions.md)                   | 需要项目所有者拍板的 7 个问题         | 影响 P0/P4       |
 
 ## 四、推荐执行顺序
