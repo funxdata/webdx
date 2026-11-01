@@ -2,8 +2,8 @@ name: Release (JSR)
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -16,37 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Configure git
-        shell: bash
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B main origin/main
-          git branch --set-upstream-to=origin/main main
-          git branch --show-current || echo "::error::git branch failed"
-          git rev-parse --abbrev-ref --symbolic-full-name '@{u}' || echo "::error::git upstream failed"
-          git status --porcelain || echo "::error::git status failed"
 
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
-      - name: Verify version
-        shell: bash
-        run: |
-          set -euo pipefail
-          version=$(node -p "require('./deno.json').version")
-          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME#v}" != "${version}" ]; then
-            echo "tag ${GITHUB_REF_NAME} 与 deno.json ${version} 不一致" >&2
-            exit 1
-          fi
-
       - name: Publish to JSR
-        run: npx jsr publish
-        env:
-          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
+        run: deno publish
