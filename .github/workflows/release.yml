@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -32,5 +33,3 @@ jobs:
 
       - name: Publish to JSR
         run: deno publish
-        env:
-          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
