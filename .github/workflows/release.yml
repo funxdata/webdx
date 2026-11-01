@@ -20,6 +20,14 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git branch --show-current || echo "::error::git branch failed"
+          git rev-parse --show-toplevel || echo "::error::git rev-parse failed"
+          git status --porcelain || echo "::error::git status failed"
+
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
