@@ -43,6 +43,6 @@ jobs:
           fi
 
       - name: Publish to JSR
-        run: deno publish
+        run: npx jsr publish
         env:
           JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
