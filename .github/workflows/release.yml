@@ -1,0 +1,36 @@
+name: Release (JSR)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to JSR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Verify version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./deno.json').version")
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME#v}" != "${version}" ]; then
+            echo "tag ${GITHUB_REF_NAME} 与 deno.json ${version} 不一致" >&2
+            exit 1
+          fi
+
+      - name: Publish to JSR
+        run: deno publish
+        env:
+          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
